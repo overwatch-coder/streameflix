@@ -27,6 +27,7 @@ interface FavoriteTVandMovie {
   type?: "movie" | "tv";
   source?: string;
   imdb_id?: string;
+  name?: string
 }
 
 interface FavoritesContextType {

@@ -9,10 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import MovieCard from "@/components/movie-card"
+import MovieCard, { placeholderImage } from "@/components/movie-card"
 import TVCard from "@/components/tv-card"
 import { redirect } from "next/navigation"
 import { Progress } from "@/components/ui/progress"
+import Image from "next/image"
 
 export default function MyListPage() {
   const { user } = useAuth()
@@ -33,11 +34,11 @@ export default function MyListPage() {
   }
 
   const filteredFavorites = favorites.filter((item) =>
-    ("title" in item ? item.title : item.name).toLowerCase().includes(searchQuery.toLowerCase()),
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   const filteredWatchlist = watchlist.filter((item) =>
-    ("title" in item ? item.title : item.name).toLowerCase().includes(searchQuery.toLowerCase()),
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   const filteredContinueWatching = continueWatching.filter((item) =>
@@ -151,14 +152,16 @@ export default function MyListPage() {
                         className="flex items-center gap-4 p-4 bg-gray-800 rounded-lg hover:bg-gray-750 transition-colors"
                       >
                         <div className="w-20 h-28 relative rounded overflow-hidden flex-shrink-0">
-                          <img
+                          <Image
                             src={
                               item.poster_path
                                 ? `https://image.tmdb.org/t/p/w200${item.poster_path}`
-                                : "/placeholder.svg?height=112&width=80"
+                                : placeholderImage
                             }
                             alt={item.title}
                             className="w-full h-full object-cover"
+                            width={120}
+                            height={120}
                           />
                         </div>
                         <div className="flex-1 min-w-0">
