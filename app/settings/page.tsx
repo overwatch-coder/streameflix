@@ -579,7 +579,7 @@ export default function SettingsPage() {
 
               <Card className="bg-gray-900 border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-white text-red-500">Danger Zone</CardTitle>
+                  <CardTitle className="text-red-500">Danger Zone</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="p-4 border border-red-500/20 rounded-lg bg-red-500/5">
