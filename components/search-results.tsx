@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { searchMovies, getMoviesByGenre, discoverMovies } from "@/lib/tmdb"
 import MovieCard from "./movie-card"
@@ -47,13 +47,9 @@ export default function SearchResults({ query, genre, year, sortBy, page }: Sear
     sortOrder: "desc",
     includeAdult: false,
     language: "en",
-  })
+  });
 
-  useEffect(() => {
-    fetchMovies()
-  }, [query, genre, year, sortBy, page])
-
-  const fetchMovies = async () => {
+  const fetchMovies = useCallback(async () => {
     setIsLoading(true)
     try {
       let response
@@ -90,7 +86,11 @@ export default function SearchResults({ query, genre, year, sortBy, page }: Sear
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [filters.genres, filters.includeAdult, filters.language, filters.ratingRange, filters.runtimeRange, filters.yearRange, genre, page, query, sortBy, year]);
+
+  useEffect(() => {
+    fetchMovies()
+  }, [query, genre, year, sortBy, page, fetchMovies])
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString())

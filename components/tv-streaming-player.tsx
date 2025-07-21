@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 import { getStreamingUrls } from "@/lib/streaming-sources"
 import { getTVSeasonDetails } from "@/lib/tmdb"
+import Image from "next/image"
 
 interface Episode {
   id: number
@@ -65,12 +66,8 @@ export default function TVStreamingPlayer({
   const [episodes, setEpisodes] = useState<Episode[]>([])
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(0)
 
-  useEffect(() => {
-    loadStreamingSources()
-    loadSeasonEpisodes()
-  }, [tvId, seasonNumber, episodeNumber])
-
-  const loadStreamingSources = async () => {
+  
+  const loadStreamingSources = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -88,9 +85,9 @@ export default function TVStreamingPlayer({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [tvId, seasonNumber, episodeNumber])
 
-  const loadSeasonEpisodes = async () => {
+  const loadSeasonEpisodes = useCallback(async () => {
     try {
       const seasonData = await getTVSeasonDetails(tvId, seasonNumber.toString())
       if (seasonData?.episodes) {
@@ -101,7 +98,13 @@ export default function TVStreamingPlayer({
     } catch (err) {
       console.error("Failed to load season episodes:", err)
     }
-  }
+  }, [tvId, seasonNumber, episodeNumber])
+
+  useEffect(() => {
+    loadStreamingSources()
+    loadSeasonEpisodes()
+  }, [tvId, seasonNumber, episodeNumber, loadStreamingSources, loadSeasonEpisodes])
+
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -456,10 +459,12 @@ export default function TVStreamingPlayer({
                   <div className="flex items-start gap-3">
                     {episode.still_path && (
                       <div className="w-16 h-9 flex-shrink-0 bg-gray-700 rounded overflow-hidden">
-                        <img
+                        <Image
                           src={`https://image.tmdb.org/t/p/w185${episode.still_path}`}
                           alt={episode.name}
                           className="w-full h-full object-cover"
+                          width={185}
+                          height={278}
                         />
                       </div>
                     )}

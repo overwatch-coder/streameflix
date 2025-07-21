@@ -109,7 +109,7 @@ export default function EnhancedSearch() {
       type,
     }))
     setCurrentPage(Number.parseInt(page))
-  }, []) // Empty dependency array - only run once
+  }, [searchParams]) // Empty dependency array - only run once
 
   // Load genres only once
   useEffect(() => {
@@ -150,10 +150,16 @@ export default function EnhancedSearch() {
           searchMoviesMultiSource(searchFilters.query, page).catch((err) => ({
             results: [],
             errors: [err.message],
+            total_pages: 0,
+            total_results: 0,
+            page: 1,
           })),
           searchTV(searchFilters.query, page).catch((err) => ({
             results: [],
             errors: [err.message],
+            total_pages: 0,
+            total_results: 0,
+            page: 1,
           })),
         ])
 
