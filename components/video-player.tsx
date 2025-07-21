@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Play, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 interface VideoPlayerProps {
   videoId: string
@@ -39,10 +40,12 @@ export default function VideoPlayer({ videoId, title }: VideoPlayerProps) {
       className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-pointer group"
       onClick={() => setIsPlaying(true)}
     >
-      <img
+      <Image
         src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
         alt={title}
         className="w-full h-full object-cover"
+        width={1280}
+        height={720}
       />
       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-300 flex items-center justify-center">
         <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white">
