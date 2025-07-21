@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check for stored user data
-    const storedUser = localStorage.getItem("streamflix_user")
+    const storedUser = localStorage.getItem("StreameFlix_user")
     if (storedUser) {
       setUser(JSON.parse(storedUser))
     }
@@ -34,12 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (userData: User) => {
     setUser(userData)
-    localStorage.setItem("streamflix_user", JSON.stringify(userData))
+    localStorage.setItem("StreameFlix_user", JSON.stringify(userData))
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem("streamflix_user")
+    localStorage.removeItem("StreameFlix_user")
   }
 
   return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>

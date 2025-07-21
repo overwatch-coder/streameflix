@@ -30,7 +30,7 @@ export default function LoginForm() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      if (email === "demo@streamflix.com" && password === "password") {
+      if (email === "demo@StreameFlix.com" && password === "password") {
         login({
           id: "1",
           email: email,
@@ -113,7 +113,7 @@ export default function LoginForm() {
 
       <div className="text-center">
         <p className="text-sm text-gray-400">
-          Demo credentials: demo@streamflix.com / password
+          Demo credentials: demo@StreameFlix.com / password
         </p>
       </div>
 

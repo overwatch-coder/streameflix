@@ -82,7 +82,7 @@ export default function Header() {
             <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
               <span className="text-white font-bold text-lg">S</span>
             </div>
-            <span className="text-white text-xl font-bold hidden sm:block">StreamFlix</span>
+            <span className="text-white text-xl font-bold hidden sm:block">StreameFlix</span>
           </Link>
 
           {/* Desktop Navigation */}

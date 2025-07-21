@@ -75,7 +75,7 @@ export default function Hero({ trendingMovies }: { trendingMovies: any }) {
     return (
       <div className="relative h-screen bg-gradient-to-br from-red-900 to-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-6xl font-bold text-white mb-4">StreamFlix</h1>
+          <h1 className="text-6xl font-bold text-white mb-4">StreameFlix</h1>
           <p className="text-xl text-gray-300">
             Your Ultimate Streaming Destination
           </p>

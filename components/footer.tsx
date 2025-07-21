@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-white font-bold text-xl">StreamFlix</h3>
+            <h3 className="text-white font-bold text-xl">StreameFlix</h3>
             <p className="text-gray-400 text-sm">
               Your ultimate destination for movies and TV shows. Stream unlimited content anytime, anywhere.
             </p>
@@ -122,7 +122,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">© {new Date().getFullYear()} StreamFlix. All rights reserved.</p>
+            <p className="text-gray-400 text-sm">© {new Date().getFullYear()} StreameFlix. All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
                 Privacy

@@ -12,7 +12,7 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "StreamFlix - Your Ultimate Movie Streaming Platform",
+  title: "StreameFlix - Your Ultimate Movie Streaming Platform",
   description:
     "Stream the latest movies and TV shows in HD quality. Discover trending content, search by genre, and enjoy unlimited entertainment.",
   keywords: "movies, streaming, entertainment, TV shows, cinema, watch online",
