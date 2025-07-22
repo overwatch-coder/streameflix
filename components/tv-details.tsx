@@ -76,6 +76,9 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
       vote_average: show.vote_average,
       release_date: show.first_air_date,
       overview: show.overview || "",
+      year: show.first_air_date
+        ? new Date(show.first_air_date).getFullYear().toString()
+        : "N/A",
     };
 
     if (isFavorite) {
@@ -293,7 +296,7 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                       setShowPlayer(true);
                       router.push(
                         `/tv/${show.id}/watch?season=${season}&episode=${episode}`
-                      )
+                      );
                     }}
                     setSelectedSeasonMain={setSelectedSeason}
                   />

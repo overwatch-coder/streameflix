@@ -181,7 +181,7 @@ export default function MyListPage() {
                                 ? `https://image.tmdb.org/t/p/w200${item.poster_path}`
                                 : placeholderImage
                             }
-                            alt={item.title}
+                            alt={item.title || "Poster"}
                             className="w-full h-full object-cover"
                             width={120}
                             height={120}

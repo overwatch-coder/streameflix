@@ -18,6 +18,7 @@ interface Movie {
   vote_average: number;
   release_date: string;
   overview: string;
+  year?: string;
 }
 
 interface MovieCardProps {
@@ -39,7 +40,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
 
   const year = movie.release_date
     ? new Date(movie.release_date).getFullYear()
-    : "N/A";
+    : movie?.year || "N/A";
   const rating = movie.vote_average
     ? Math.round(movie.vote_average * 10) / 10
     : 0;
@@ -77,7 +78,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
               <Link href={`/movie/${movie.id}`} className="block w-full h-full">
                 <Image
                   src={posterUrl}
-                  alt={movie.title}
+                  alt={movie.title || "Movie Poster"}
                   fill
                   className="object-cover transition-opacity duration-300 group-hover:opacity-70"
                   onError={(e) => {

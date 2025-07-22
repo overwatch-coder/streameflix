@@ -10,6 +10,8 @@ import { useFavorites } from "@/contexts/favorites-context"
 import { useAuth } from "@/contexts/auth-context"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { placeholderImage } from "./movie-card"
 
 interface Movie {
   id: number
@@ -33,6 +35,7 @@ export default function MovieInfoModal({ movie, open, onClose }: MovieInfoModalP
   const [isLoading, setIsLoading] = useState(false)
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites()
   const { user } = useAuth();
+  const router = useRouter();
 
    const loadMovieDetails = useCallback(async () => {
      setIsLoading(true);
@@ -73,17 +76,21 @@ export default function MovieInfoModal({ movie, open, onClose }: MovieInfoModalP
         vote_average: movie.vote_average,
         type: "movie",
         overview: movie.overview || "",
-      })
+        year: movie.release_date
+          ? new Date(movie.release_date).getFullYear().toString()
+          : "N/A",
+      });
     }
   }
 
   const handleWatchClick = () => {
-    window.location.href = `/movie/${movie.id}/watch`
+    // window.location.href = `/movie/${movie.id}/watch`
+    router.push(`/movie/${movie.id}/watch`)
   }
 
   const posterUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : "/placeholder.svg?height=750&width=500"
+    : placeholderImage;
 
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : "N/A"
   const rating = movie.vote_average ? Math.round(movie.vote_average * 10) / 10 : 0

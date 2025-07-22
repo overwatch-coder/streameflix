@@ -29,6 +29,7 @@ interface FavoriteTVandMovie {
   imdb_id?: string;
   name?: string
   overview?: string
+  year?: string
 }
 
 interface FavoritesContextType {

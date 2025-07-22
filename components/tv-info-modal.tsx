@@ -110,12 +110,16 @@ export default function TVInfoModal({ show, open, onClose }: TVInfoModalProps) {
         vote_average: show.vote_average,
         type: "tv",
         overview: show.overview || "",
+        year: show.first_air_date
+          ? new Date(show.first_air_date).getFullYear().toString()
+          : "N/A",
       });
     }
   };
 
   const handleWatchClick = () => {
-    window.location.href = `/tv/${show.id}/watch`;
+    // window.location.href = `/tv/${show.id}/watch`;
+    router.push(`/tv/${show.id}/watch?season=${selectedSeason}&episode=1`);
   };
 
   const handleEpisodeWatch = (episodeNumber: number) => {

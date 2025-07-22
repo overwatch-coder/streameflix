@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Play, Star, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import Link from "next/link";
 import TVInfoModal from "./tv-info-modal";
@@ -19,6 +18,8 @@ interface TVShow {
   vote_average: number;
   first_air_date: string;
   overview: string;
+  year?: string;
+  release_date?: string;
 }
 
 interface TVCardProps {
@@ -38,7 +39,7 @@ export default function TVCard({ show }: TVCardProps) {
 
   const year = show.first_air_date
     ? new Date(show.first_air_date).getFullYear()
-    : "N/A";
+    : show?.year || "N/A";
   const rating = show.vote_average
     ? Math.round(show.vote_average * 10) / 10
     : 0;
@@ -78,7 +79,7 @@ export default function TVCard({ show }: TVCardProps) {
               <Link href={`/tv/${show.id}`} className="block w-full h-full">
                 <Image
                   src={posterUrl}
-                  alt={show.name}
+                  alt={show.name || "TV Show"}
                   fill
                   className="object-cover transition-opacity duration-300 group-hover:opacity-70"
                   onError={(e) => {

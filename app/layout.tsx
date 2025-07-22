@@ -29,7 +29,7 @@ export default function RootLayout({
         <AuthProvider>
           <FavoritesProvider>
             <Header />
-            <main>{children}</main>
+            <main className="pt-16">{children}</main>
             <Footer />
           </FavoritesProvider>
         </AuthProvider>

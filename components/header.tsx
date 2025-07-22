@@ -87,7 +87,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-black/90 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
+    <header className="bg-black/90 backdrop-blur-sm border-b border-gray-800 fixed top-0 z-50 w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -192,18 +192,16 @@ export default function Header() {
                     className="relative h-8 w-8 rounded-full"
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={user.avatar || "/placeholder.svg"}
-                        alt={user.name}
-                      />
+                      <AvatarImage src={user.avatar} alt={user.name} />
                       <AvatarFallback>
-                        <User className="h-4 w-4" />
+                        {/* <User className="h-4 w-4" /> */}
+                        {user.name?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="w-56 bg-gray-900 border-gray-800"
+                  className="w-56 z-[100] bg-gray-900 border-gray-800"
                   align="end"
                   forceMount
                 >

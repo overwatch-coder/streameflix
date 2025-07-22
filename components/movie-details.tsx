@@ -24,6 +24,7 @@ import MovieRecommendations from "./movie-recommendations";
 import VideoPlayer from "./video-player";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { placeholderImage } from "./movie-card";
 
 interface MovieDetailsProps {
   movieId: string;
@@ -71,7 +72,7 @@ export default function MovieDetails({
           title: `Movie ${movieId}`,
           overview:
             "Movie details are currently unavailable. This movie may not exist in our database or there may be a temporary issue with our data sources.",
-          poster_path: null,
+          poster_path: placeholderImage,
           backdrop_path: null,
           release_date: new Date().toISOString().split("T")[0],
           vote_average: 0,
@@ -113,9 +114,12 @@ export default function MovieDetails({
         release_date: movie.release_date,
         vote_average: movie.vote_average,
         source: movie.source || source,
-        imdb_id: movie.imdb_id || imdbId,
+        imdb_id: movie?.imdb_id || imdbId,
         type: "movie",
         overview: movie.overview || "",
+        year: movie.release_date
+          ? new Date(movie.release_date).getFullYear().toString()
+          : "N/A",
       });
     }
   };
@@ -169,13 +173,13 @@ export default function MovieDetails({
     ? movie.poster_path
     : movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : "/placeholder.svg?height=750&width=500&text=Movie+Poster";
+    : placeholderImage;
 
   const backdropUrl = movie.backdrop_path?.startsWith("http")
     ? movie.backdrop_path
     : movie.backdrop_path
     ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
-    : "/placeholder.svg?height=1080&width=1920&text=Movie+Backdrop";
+    : placeholderImage;
 
   const director = credits?.crew?.find(
     (person: any) => person.job === "Director"
