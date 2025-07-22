@@ -75,6 +75,7 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
       type: "tv" as const,
       vote_average: show.vote_average,
       release_date: show.first_air_date,
+      overview: show.overview || "",
     };
 
     if (isFavorite) {

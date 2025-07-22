@@ -24,10 +24,11 @@ interface FavoriteTVandMovie {
   poster_path: string;
   release_date: string;
   vote_average: number;
-  type?: "movie" | "tv";
+  type: "movie" | "tv";
   source?: string;
   imdb_id?: string;
   name?: string
+  overview?: string
 }
 
 interface FavoritesContextType {

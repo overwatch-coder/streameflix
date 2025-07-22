@@ -72,6 +72,7 @@ export default function MovieInfoModal({ movie, open, onClose }: MovieInfoModalP
         release_date: movie.release_date,
         vote_average: movie.vote_average,
         type: "movie",
+        overview: movie.overview || "",
       })
     }
   }

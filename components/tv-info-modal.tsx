@@ -109,6 +109,7 @@ export default function TVInfoModal({ show, open, onClose }: TVInfoModalProps) {
         release_date: show.first_air_date,
         vote_average: show.vote_average,
         type: "tv",
+        overview: show.overview || "",
       });
     }
   };

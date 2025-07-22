@@ -114,6 +114,8 @@ export default function MovieDetails({
         vote_average: movie.vote_average,
         source: movie.source || source,
         imdb_id: movie.imdb_id || imdbId,
+        type: "movie",
+        overview: movie.overview || "",
       });
     }
   };
