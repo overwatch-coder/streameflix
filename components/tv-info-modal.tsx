@@ -1,41 +1,48 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Star, Play, Heart, Calendar, Tv } from "lucide-react"
-import { getTVDetails, getTVCredits, getTVSeasonDetails } from "@/lib/tmdb"
-import { useFavorites } from "@/contexts/favorites-context"
-import { useAuth } from "@/contexts/auth-context"
-import Image from "next/image"
-import Link from "next/link"
-import { placeholderImage } from "./movie-card"
+import { useState, useEffect, useCallback } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Star, Play, Heart, Calendar, Tv } from "lucide-react";
+import { getTVDetails, getTVCredits, getTVSeasonDetails } from "@/lib/tmdb";
+import { useFavorites } from "@/contexts/favorites-context";
+import { useAuth } from "@/contexts/auth-context";
+import Image from "next/image";
+import Link from "next/link";
+import { placeholderImage } from "./movie-card";
+import { useRouter } from "next/navigation";
 
 interface TVShow {
-  id: number
-  name: string
-  poster_path: string
-  vote_average: number
-  first_air_date: string
-  overview: string
+  id: number;
+  name: string;
+  poster_path: string;
+  vote_average: number;
+  first_air_date: string;
+  overview: string;
 }
 
 interface TVInfoModalProps {
-  show: TVShow
-  open: boolean
-  onClose: () => void
+  show: TVShow;
+  open: boolean;
+  onClose: () => void;
 }
 
 export default function TVInfoModal({ show, open, onClose }: TVInfoModalProps) {
-  const [showDetails, setShowDetails] = useState<any>(null)
-  const [credits, setCredits] = useState<any>(null)
-  const [selectedSeason, setSelectedSeason] = useState<number>(1)
-  const [episodes, setEpisodes] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites()
-  const { user } = useAuth()
+  const [showDetails, setShowDetails] = useState<any>(null);
+  const [credits, setCredits] = useState<any>(null);
+  const [selectedSeason, setSelectedSeason] = useState<number>(1);
+  const [episodes, setEpisodes] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
+  const { user } = useAuth();
+  const router = useRouter();
 
   const loadShowDetails = useCallback(async () => {
     setIsLoading(true);
@@ -79,21 +86,21 @@ export default function TVInfoModal({ show, open, onClose }: TVInfoModalProps) {
 
   useEffect(() => {
     if (open && show.id) {
-      loadShowDetails()
+      loadShowDetails();
     }
-  }, [loadShowDetails, open, show.id])
+  }, [loadShowDetails, open, show.id]);
 
   useEffect(() => {
     if (showDetails && selectedSeason) {
-      loadSeasonEpisodes()
+      loadSeasonEpisodes();
     }
-  }, [showDetails, selectedSeason, loadSeasonEpisodes])
-  
+  }, [showDetails, selectedSeason, loadSeasonEpisodes]);
+
   const handleFavoriteToggle = () => {
-    if (!user || !show) return
+    if (!user || !show) return;
 
     if (isFavorite(show.id)) {
-      removeFromFavorites(show.id)
+      removeFromFavorites(show.id);
     } else {
       addToFavorites({
         id: show.id,
@@ -102,27 +109,34 @@ export default function TVInfoModal({ show, open, onClose }: TVInfoModalProps) {
         release_date: show.first_air_date,
         vote_average: show.vote_average,
         type: "tv",
-      })
+      });
     }
-  }
+  };
 
   const handleWatchClick = () => {
-    window.location.href = `/tv/${show.id}/watch`
-  }
+    window.location.href = `/tv/${show.id}/watch`;
+  };
 
   const handleEpisodeWatch = (episodeNumber: number) => {
-    window.location.href = `/tv/${show.id}/watch?season=${selectedSeason}&episode=${episodeNumber}`
-  }
+    router.push(
+      `/tv/${show.id}/watch?season=${selectedSeason}&episode=${episodeNumber}`
+    );
+  };
 
   const posterUrl = show.poster_path
     ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
-    : placeholderImage
+    : placeholderImage;
 
-  const year = show.first_air_date ? new Date(show.first_air_date).getFullYear() : "N/A"
-  const rating = show.vote_average ? Math.round(show.vote_average * 10) / 10 : 0
-  const creator = showDetails?.created_by?.[0]
-  const mainCast = credits?.cast?.slice(0, 4) || []
-  const regularSeasons = showDetails?.seasons?.filter((s: any) => s.season_number > 0) || []
+  const year = show.first_air_date
+    ? new Date(show.first_air_date).getFullYear()
+    : "N/A";
+  const rating = show.vote_average
+    ? Math.round(show.vote_average * 10) / 10
+    : 0;
+  const creator = showDetails?.created_by?.[0];
+  const mainCast = credits?.cast?.slice(0, 4) || [];
+  const regularSeasons =
+    showDetails?.seasons?.filter((s: any) => s.season_number > 0) || [];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

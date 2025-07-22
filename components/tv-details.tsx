@@ -290,6 +290,9 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                       setSelectedSeason(season);
                       setSelectedEpisode(episode);
                       setShowPlayer(true);
+                      router.push(
+                        `/tv/${show.id}/watch?season=${season}&episode=${episode}`
+                      )
                     }}
                     setSelectedSeasonMain={setSelectedSeason}
                   />
