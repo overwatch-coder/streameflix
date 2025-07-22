@@ -1,29 +1,41 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import Image from "next/image"
-import { Play, Calendar, Clock } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getTVSeasonDetails } from "@/lib/tmdb"
-import type { Season as TVSeason, Episode as TVEpisode } from "@/types/tv"
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import { Play, Calendar, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { getTVSeasonDetails } from "@/lib/tmdb";
+import type { Season as TVSeason, Episode as TVEpisode } from "@/types/tv";
 
 interface SeasonsEpisodesProps {
-  showId: number
-  seasons: TVSeason[]
-  onEpisodeSelect?: (season: number, episode: number) => void
+  showId: number;
+  seasons: TVSeason[];
+  onEpisodeSelect?: (season: number, episode: number) => void;
+  setSelectedSeasonMain?: (season: number) => void;
 }
 
-export default function SeasonsEpisodes({ showId, seasons, onEpisodeSelect }: SeasonsEpisodesProps) {
-  const [selectedSeason, setSelectedSeason] = useState<number>(1)
-  const [episodes, setEpisodes] = useState<TVEpisode[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+export default function SeasonsEpisodes({
+  showId,
+  seasons,
+  onEpisodeSelect,
+  setSelectedSeasonMain,
+}: SeasonsEpisodesProps) {
+  const [selectedSeason, setSelectedSeason] = useState<number>(1);
+  const [episodes, setEpisodes] = useState<TVEpisode[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Filter out season 0 (specials) and sort by season number
   const regularSeasons = seasons
     .filter((season) => season.season_number > 0)
-    .sort((a, b) => a.season_number - b.season_number)
+    .sort((a, b) => a.season_number - b.season_number);
 
   // useEffect(() => {
   //   if (regularSeasons.length > 0) {
@@ -31,30 +43,36 @@ export default function SeasonsEpisodes({ showId, seasons, onEpisodeSelect }: Se
   //   }
   // }, [regularSeasons]);
 
-  const fetchSeasonDetails = useCallback(async (selectedSeason: number) => {
-    setIsLoading(true)
-    try {
-      const seasonData = await getTVSeasonDetails(showId.toString(), selectedSeason.toString())
-      setEpisodes(seasonData.episodes || [])
-    } catch (error) {
-      console.error("Error fetching season details:", error)
-      setEpisodes([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [showId])
+  const fetchSeasonDetails = useCallback(
+    async (selectedSeason: number) => {
+      setIsLoading(true);
+      try {
+        const seasonData = await getTVSeasonDetails(
+          showId.toString(),
+          selectedSeason.toString()
+        );
+        setEpisodes(seasonData.episodes || []);
+      } catch (error) {
+        console.error("Error fetching season details:", error);
+        setEpisodes([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [showId]
+  );
 
   useEffect(() => {
     if (selectedSeason) {
-      fetchSeasonDetails(selectedSeason)
+      fetchSeasonDetails(selectedSeason);
     }
-  }, [fetchSeasonDetails, selectedSeason, showId])
+  }, [fetchSeasonDetails, selectedSeason, showId]);
 
   const handleEpisodePlay = (episodeNumber: number) => {
     if (onEpisodeSelect) {
-      onEpisodeSelect(selectedSeason, episodeNumber)
+      onEpisodeSelect(selectedSeason, episodeNumber);
     }
-  }
+  };
 
   // console.log({selectedSeason});
 
@@ -63,13 +81,24 @@ export default function SeasonsEpisodes({ showId, seasons, onEpisodeSelect }: Se
       {/* Season Selector */}
       <div className="flex items-center gap-4">
         <h3 className="text-xl font-bold text-white">Episodes</h3>
-        <Select value={selectedSeason.toString()} onValueChange={(value) => setSelectedSeason(Number.parseInt(value))}>
+        <Select
+          value={selectedSeason.toString()}
+          onValueChange={(value) => {
+            setSelectedSeason(Number.parseInt(value));
+            if (setSelectedSeasonMain) {
+              setSelectedSeasonMain(Number.parseInt(value));
+            }
+          }}
+        >
           <SelectTrigger className="w-48 bg-gray-800 border-gray-700 text-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-gray-800 border-gray-700">
             {regularSeasons.map((season) => (
-              <SelectItem key={season.id} value={season.season_number.toString()}>
+              <SelectItem
+                key={season.id}
+                value={season.season_number.toString()}
+              >
                 Season {season.season_number}
               </SelectItem>
             ))}
@@ -85,7 +114,10 @@ export default function SeasonsEpisodes({ showId, seasons, onEpisodeSelect }: Se
       ) : (
         <div className="space-y-4">
           {episodes.map((episode) => (
-            <Card key={episode.id} className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors">
+            <Card
+              key={episode.id}
+              className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors"
+            >
               <CardContent className="p-4">
                 <div className="flex gap-4">
                   {/* Episode Image */}
@@ -108,7 +140,9 @@ export default function SeasonsEpisodes({ showId, seasons, onEpisodeSelect }: Se
                       <Button
                         size="sm"
                         className="bg-red-600 hover:bg-red-700"
-                        onClick={() => handleEpisodePlay(episode.episode_number)}
+                        onClick={() =>
+                          handleEpisodePlay(episode.episode_number)
+                        }
                       >
                         <Play className="h-4 w-4 fill-current" />
                       </Button>
@@ -126,7 +160,11 @@ export default function SeasonsEpisodes({ showId, seasons, onEpisodeSelect }: Se
                           {episode.air_date && (
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              <span>{new Date(episode.air_date).toLocaleDateString()}</span>
+                              <span>
+                                {new Date(
+                                  episode.air_date
+                                ).toLocaleDateString()}
+                              </span>
                             </div>
                           )}
                           {episode.runtime && (
@@ -146,14 +184,20 @@ export default function SeasonsEpisodes({ showId, seasons, onEpisodeSelect }: Se
                       <Button
                         size="sm"
                         className="bg-red-600 hover:bg-red-700 ml-4"
-                        onClick={() => handleEpisodePlay(episode.episode_number)}
+                        onClick={() =>
+                          handleEpisodePlay(episode.episode_number)
+                        }
                       >
                         <Play className="h-4 w-4 fill-current mr-1" />
                         Watch
                       </Button>
                     </div>
 
-                    {episode.overview && <p className="text-gray-300 text-sm line-clamp-2">{episode.overview}</p>}
+                    {episode.overview && (
+                      <p className="text-gray-300 text-sm line-clamp-2">
+                        {episode.overview}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -162,11 +206,13 @@ export default function SeasonsEpisodes({ showId, seasons, onEpisodeSelect }: Se
 
           {episodes.length === 0 && !isLoading && (
             <div className="text-center py-8">
-              <p className="text-gray-400">No episodes found for this season.</p>
+              <p className="text-gray-400">
+                No episodes found for this season.
+              </p>
             </div>
           )}
         </div>
       )}
     </div>
-  )
+  );
 }

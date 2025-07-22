@@ -463,8 +463,6 @@ export default function EnhancedSearch() {
 
   const currentGenres = filters.type === "tv" ? tvGenres : movieGenres;
 
-  console.log({ filters, results });
-
   return (
     <>
       <div className="min-h-screen bg-black pt-20">
@@ -769,25 +767,19 @@ export default function EnhancedSearch() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-4">
                   {results
                     .slice((currentPage - 1) * 20, currentPage * 20)
-                    .map((item) => {
+                    .map((item, index) => {
                       const mediaType = item.media_type || filters.type;
                       const title = item.title || item.name || "";
-                      const year =
-                        item.release_date || item.first_air_date
-                          ? new Date(
-                              item.release_date || item.first_air_date || ""
-                            ).getFullYear()
-                          : "";
 
                       if (mediaType !== "multi") {
                         return (
                           <>
                             {mediaType === "movie" ? (
                               <MovieCard
-                                key={`${mediaType}-${item.id}`}
+                                key={`${mediaType}-${item.id}-${index}`}
                                 movie={{
                                   id: parseInt(item.id),
-                                  title: item.name || item.title || "",
+                                  title: title,
                                   poster_path:
                                     item.poster_path || placeholderImage,
                                   vote_average: item.vote_average,
@@ -797,10 +789,10 @@ export default function EnhancedSearch() {
                               />
                             ) : (
                               <TVCard
-                                key={`${mediaType}-${item.id}`}
+                                key={`${mediaType}-${item.id}-${index}`}
                                 show={{
                                   id: parseInt(item.id),
-                                  name: item.name || item.title || "",
+                                  name: title,
                                   poster_path:
                                     item.poster_path || placeholderImage,
                                   vote_average: item.vote_average,
@@ -816,10 +808,10 @@ export default function EnhancedSearch() {
                           <>
                             {item.media_type === "movie" ? (
                               <MovieCard
-                                key={`${mediaType}-${item.id}`}
+                                key={`${mediaType}-${item.id}-${index}`}
                                 movie={{
                                   id: parseInt(item.id),
-                                  title: item.name || item.title || "",
+                                  title: title,
                                   poster_path:
                                     item.poster_path || placeholderImage,
                                   vote_average: item.vote_average,
@@ -829,10 +821,10 @@ export default function EnhancedSearch() {
                               />
                             ) : (
                               <TVCard
-                                key={`${mediaType}-${item.id}`}
+                                key={`${mediaType}-${item.id}-${index}`}
                                 show={{
                                   id: parseInt(item.id),
-                                  name: item.name || item.title || "",
+                                  name: title,
                                   poster_path:
                                     item.poster_path || placeholderImage,
                                   vote_average: item.vote_average,

@@ -1,51 +1,71 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { Play, Star, Calendar, Tv, Users, Clock, Plus, Check } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
-import type { TVDetails as TVDetailsType, TVCredits, TVVideos } from "@/types/tv"
-import VideoPlayer from "./video-player"
-import SeasonsEpisodes from "./seasons-episodes"
-import RealStreamingPlayer from "./real-streaming-player"
-import { useFavorites } from "@/contexts/favorites-context"
-import Link from "next/link"
-import { placeholderImage } from "./movie-card"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import Image from "next/image";
+import {
+  Play,
+  Star,
+  Calendar,
+  Tv,
+  Users,
+  Clock,
+  Plus,
+  Check,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import type {
+  TVDetails as TVDetailsType,
+  TVCredits,
+  TVVideos,
+} from "@/types/tv";
+import VideoPlayer from "./video-player";
+import SeasonsEpisodes from "./seasons-episodes";
+import RealStreamingPlayer from "./real-streaming-player";
+import { useFavorites } from "@/contexts/favorites-context";
+import Link from "next/link";
+import { placeholderImage } from "./movie-card";
+import { useRouter } from "next/navigation";
 
 interface TVDetailsProps {
-  show: TVDetailsType
-  credits: TVCredits
-  videos: TVVideos
+  show: TVDetailsType;
+  credits: TVCredits;
+  videos: TVVideos;
 }
 
 export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
-  const [showPlayer, setShowPlayer] = useState(false)
-  const [selectedSeason, setSelectedSeason] = useState(1)
-  const [selectedEpisode, setSelectedEpisode] = useState(1)
+  const [showPlayer, setShowPlayer] = useState(false);
+  const [selectedSeason, setSelectedSeason] = useState(1);
+  const [selectedEpisode, setSelectedEpisode] = useState(1);
   const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
   const router = useRouter();
 
-  const isFavorite = favorites.some((fav) => fav.id === show.id && fav.type === "tv")
+  const isFavorite = favorites.some(
+    (fav) => fav.id === show.id && fav.type === "tv"
+  );
 
   const backdropUrl = show.backdrop_path
     ? `https://image.tmdb.org/t/p/original${show.backdrop_path}`
-    : placeholderImage
+    : placeholderImage;
 
   const posterUrl = show.poster_path
     ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
     : placeholderImage;
 
-  const creator = show.created_by?.[0]
-  const mainCast = credits.cast.slice(0, 6)
-  const trailer = videos.results.find((video) => video.type === "Trailer" && video.site === "YouTube")
+  const creator = show.created_by?.[0];
+  const mainCast = credits.cast.slice(0, 6);
+  const trailer = videos.results.find(
+    (video) => video.type === "Trailer" && video.site === "YouTube"
+  );
 
   const handleWatchNow = () => {
-    setShowPlayer(true)
-  }
+    setShowPlayer(true);
+    router.push(
+      `/tv/${show.id}/watch?season=${selectedSeason}&episode=${selectedEpisode}`
+    );
+  };
 
   const handleToggleFavorite = () => {
     const item = {
@@ -55,14 +75,14 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
       type: "tv" as const,
       vote_average: show.vote_average,
       release_date: show.first_air_date,
-    }
+    };
 
     if (isFavorite) {
-      removeFromFavorites(show.id)
+      removeFromFavorites(show.id);
     } else {
-      addToFavorites(item)
+      addToFavorites(item);
     }
-  }
+  };
 
   return (
     <>
@@ -83,7 +103,13 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
             <div className="lg:col-span-1">
               <div className="sticky top-24">
                 <div className="aspect-[2/3] relative rounded-lg overflow-hidden shadow-2xl">
-                  <Image src={posterUrl || "/placeholder.svg"} alt={show.name} fill className="object-cover" priority />
+                  <Image
+                    src={posterUrl || "/placeholder.svg"}
+                    alt={show.name}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
                 </div>
               </div>
             </div>
@@ -91,13 +117,19 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
             {/* Show Info */}
             <div className="lg:col-span-2 space-y-6">
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{show.name}</h1>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                  {show.name}
+                </h1>
 
                 <div className="flex flex-wrap items-center gap-4 mb-6">
                   <div className="flex items-center space-x-1">
                     <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                    <span className="text-white font-semibold">{show.vote_average.toFixed(1)}</span>
-                    <span className="text-gray-400">({show.vote_count.toLocaleString()} votes)</span>
+                    <span className="text-white font-semibold">
+                      {show.vote_average.toFixed(1)}
+                    </span>
+                    <span className="text-gray-400">
+                      ({show.vote_count.toLocaleString()} votes)
+                    </span>
                   </div>
 
                   <div className="flex items-center space-x-1 text-gray-300">
@@ -108,7 +140,8 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                   <div className="flex items-center space-x-1 text-gray-300">
                     <Tv className="h-4 w-4" />
                     <span>
-                      {show.number_of_seasons} Season{show.number_of_seasons !== 1 ? "s" : ""}
+                      {show.number_of_seasons} Season
+                      {show.number_of_seasons !== 1 ? "s" : ""}
                     </span>
                   </div>
 
@@ -127,7 +160,11 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
 
                 <div className="flex flex-wrap gap-2 mb-6">
                   {show.genres.map((genre) => (
-                    <Badge key={genre.id} variant="secondary" className="bg-gray-800 text-white">
+                    <Badge
+                      key={genre.id}
+                      variant="secondary"
+                      className="bg-gray-800 text-white"
+                    >
                       {genre.name}
                     </Badge>
                   ))}
@@ -167,41 +204,68 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
               {/* Tabs for different sections */}
               <Tabs defaultValue="overview" className="w-full">
                 <TabsList className="grid w-full grid-cols-4 bg-gray-800">
-                  <TabsTrigger value="overview" className="text-white data-[state=active]:bg-red-600">
+                  <TabsTrigger
+                    value="overview"
+                    className="text-white data-[state=active]:bg-red-600"
+                  >
                     Overview
                   </TabsTrigger>
-                  <TabsTrigger value="episodes" className="text-white data-[state=active]:bg-red-600">
+                  <TabsTrigger
+                    value="episodes"
+                    className="text-white data-[state=active]:bg-red-600"
+                  >
                     Episodes
                   </TabsTrigger>
-                  <TabsTrigger value="cast" className="text-white data-[state=active]:bg-red-600">
+                  <TabsTrigger
+                    value="cast"
+                    className="text-white data-[state=active]:bg-red-600"
+                  >
                     Cast
                   </TabsTrigger>
-                  <TabsTrigger value="trailer" className="text-white data-[state=active]:bg-red-600">
+                  <TabsTrigger
+                    value="trailer"
+                    className="text-white data-[state=active]:bg-red-600"
+                  >
                     Trailer
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-4">Overview</h2>
-                    <p className="text-gray-300 text-lg leading-relaxed">{show.overview}</p>
+                    <h2 className="text-2xl font-bold text-white mb-4">
+                      Overview
+                    </h2>
+                    <p className="text-gray-300 text-lg leading-relaxed">
+                      {show.overview}
+                    </p>
                   </div>
 
                   {creator && (
                     <div>
-                      <h3 className="text-xl font-bold text-white mb-2">Creator</h3>
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        Creator
+                      </h3>
                       <p className="text-gray-300">{creator.name}</p>
                     </div>
                   )}
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <h4 className="text-white font-semibold mb-1">First Air Date</h4>
-                      <p className="text-gray-300">{new Date(show.first_air_date).toLocaleDateString()}</p>
+                      <h4 className="text-white font-semibold mb-1">
+                        First Air Date
+                      </h4>
+                      <p className="text-gray-300">
+                        {new Date(show.first_air_date).toLocaleDateString()}
+                      </p>
                     </div>
                     <div>
                       <h4 className="text-white font-semibold mb-1">Status</h4>
-                      <Badge variant={show.status === "Ended" ? "destructive" : "default"} className="bg-green-600">
+                      <Badge
+                        variant={
+                          show.status === "Ended" ? "destructive" : "default"
+                        }
+                        className="bg-green-600"
+                      >
                         {show.status}
                       </Badge>
                     </div>
@@ -210,7 +274,9 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                       <p className="text-gray-300">{show.number_of_seasons}</p>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold mb-1">Episodes</h4>
+                      <h4 className="text-white font-semibold mb-1">
+                        Episodes
+                      </h4>
                       <p className="text-gray-300">{show.number_of_episodes}</p>
                     </div>
                   </div>
@@ -221,17 +287,20 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                     showId={show.id}
                     seasons={show.seasons}
                     onEpisodeSelect={(season, episode) => {
-                      setSelectedSeason(season)
-                      setSelectedEpisode(episode)
-                      setShowPlayer(true)
+                      setSelectedSeason(season);
+                      setSelectedEpisode(episode);
+                      setShowPlayer(true);
                     }}
+                    setSelectedSeasonMain={setSelectedSeason}
                   />
                 </TabsContent>
 
                 <TabsContent value="cast">
                   {mainCast.length > 0 && (
                     <div>
-                      <h3 className="text-xl font-bold text-white mb-4">Main Cast</h3>
+                      <h3 className="text-xl font-bold text-white mb-4">
+                        Main Cast
+                      </h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {mainCast.map((actor) => (
                           <Link key={actor.id} href={`/person/${actor.id}`}>
@@ -250,8 +319,12 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                                     )}
                                   </div>
                                   <div>
-                                    <p className="text-white font-medium">{actor.name}</p>
-                                    <p className="text-gray-400 text-sm">{actor.character}</p>
+                                    <p className="text-white font-medium">
+                                      {actor.name}
+                                    </p>
+                                    <p className="text-gray-400 text-sm">
+                                      {actor.character}
+                                    </p>
                                   </div>
                                 </div>
                               </CardContent>
@@ -266,8 +339,13 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                 <TabsContent value="trailer">
                   {trailer ? (
                     <div>
-                      <h3 className="text-xl font-bold text-white mb-4">Trailer</h3>
-                      <VideoPlayer videoId={trailer.key} title={`${show.name} Trailer`} />
+                      <h3 className="text-xl font-bold text-white mb-4">
+                        Trailer
+                      </h3>
+                      <VideoPlayer
+                        videoId={trailer.key}
+                        title={`${show.name} Trailer`}
+                      />
                     </div>
                   ) : (
                     <p className="text-gray-400">No trailer available</p>
@@ -292,10 +370,14 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
             setShowPlayer(false);
             router.push(`/tv/${show.id}`);
           }}
-          onEpisodeSelect={(selectedSeason, selectedEpisode) => router.push(`/tv/${show.id}/watch?season=${selectedSeason}&episode=${selectedEpisode}`)}
+          onEpisodeSelect={(selectedSeason, selectedEpisode) =>
+            router.push(
+              `/tv/${show.id}/watch?season=${selectedSeason}&episode=${selectedEpisode}`
+            )
+          }
           show={show}
         />
       )}
     </>
-  )
+  );
 }

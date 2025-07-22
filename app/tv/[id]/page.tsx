@@ -1,16 +1,22 @@
-import { Suspense } from "react"
-import { notFound } from "next/navigation"
-import { getTVDetails, getTVCredits, getTVVideos, getSimilarTV } from "@/lib/tmdb"
-import TVDetails from "@/components/tv-details"
-import TVSection from "@/components/tv-section"
-import LoadingSpinner from "@/components/loading-spinner"
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
+import {
+  getTVDetails,
+  getTVCredits,
+  getTVVideos,
+  getSimilarTV,
+} from "@/lib/tmdb";
+import TVDetails from "@/components/tv-details";
+import TVSection from "@/components/tv-section";
+import LoadingSpinner from "@/components/loading-spinner";
+import TVRecommendations from "@/components/tv-recommendations";
 
 interface TVPageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 export default async function TVPage({ params }: TVPageProps) {
-  const { id } = await params
+  const { id } = await params;
 
   try {
     const [show, credits, videos, similar] = await Promise.all([
@@ -18,10 +24,10 @@ export default async function TVPage({ params }: TVPageProps) {
       getTVCredits(id),
       getTVVideos(id),
       getSimilarTV(id),
-    ])
+    ]);
 
     if (!show) {
-      notFound()
+      notFound();
     }
 
     return (
@@ -30,15 +36,11 @@ export default async function TVPage({ params }: TVPageProps) {
           <TVDetails show={show} credits={credits} videos={videos} />
         </Suspense>
 
-        {similar.results.length > 0 && (
-          <div className="mt-12">
-            <TVSection title="Similar TV Shows" shows={similar.results.slice(0, 12)} />
-          </div>
-        )}
+        <TVRecommendations currentTvId={id} />
       </div>
-    )
+    );
   } catch (error) {
-    console.error("Error loading TV show:", error)
-    notFound()
+    console.error("Error loading TV show:", error);
+    notFound();
   }
 }

@@ -1,11 +1,19 @@
-"use client"
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star, Play, Heart, Share2, Calendar, Clock, AlertCircle } from "lucide-react";
+import {
+  Star,
+  Play,
+  Heart,
+  Share2,
+  Calendar,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 import { importMovieDetails } from "@/lib/tmdb";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useAuth } from "@/contexts/auth-context";
@@ -18,20 +26,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface MovieDetailsProps {
-  movieId: string
-  source?: string
-  imdbId?: string
+  movieId: string;
+  source?: string;
+  imdbId?: string;
 }
 
-export default function MovieDetails({ movieId, source = "tmdb", imdbId }: MovieDetailsProps) {
-  const [movie, setMovie] = useState<any>(null)
-  const [credits, setCredits] = useState<any>(null)
-  const [videos, setVideos] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [showPlayer, setShowPlayer] = useState(false)
-  const [activeTab, setActiveTab] = useState("overview")
-  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites()
+export default function MovieDetails({
+  movieId,
+  source = "tmdb",
+  imdbId,
+}: MovieDetailsProps) {
+  const [movie, setMovie] = useState<any>(null);
+  const [credits, setCredits] = useState<any>(null);
+  const [videos, setVideos] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showPlayer, setShowPlayer] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
   const { user } = useAuth();
   const router = useRouter();
 
@@ -85,16 +97,14 @@ export default function MovieDetails({ movieId, source = "tmdb", imdbId }: Movie
   }, [imdbId, movieId]);
 
   useEffect(() => {
-    loadMovieDetails()
-  }, [loadMovieDetails, movieId, source])
-
-  
+    loadMovieDetails();
+  }, [loadMovieDetails, movieId, source]);
 
   const handleFavoriteToggle = () => {
-    if (!user || !movie) return
+    if (!user || !movie) return;
 
     if (isFavorite(movie.id)) {
-      removeFromFavorites(movie.id)
+      removeFromFavorites(movie.id);
     } else {
       addToFavorites({
         id: movie.id,
@@ -104,9 +114,9 @@ export default function MovieDetails({ movieId, source = "tmdb", imdbId }: Movie
         vote_average: movie.vote_average,
         source: movie.source || source,
         imdb_id: movie.imdb_id || imdbId,
-      })
+      });
     }
-  }
+  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -114,11 +124,11 @@ export default function MovieDetails({ movieId, source = "tmdb", imdbId }: Movie
         title: movie.title,
         text: `Check out ${movie.title}`,
         url: window.location.href,
-      })
+      });
     } else {
-      navigator.clipboard.writeText(window.location.href)
+      navigator.clipboard.writeText(window.location.href);
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -129,7 +139,7 @@ export default function MovieDetails({ movieId, source = "tmdb", imdbId }: Movie
           <p className="text-sm text-gray-400 mt-2">Movie ID: {movieId}</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error && !movie) {
@@ -150,31 +160,35 @@ export default function MovieDetails({ movieId, source = "tmdb", imdbId }: Movie
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   const posterUrl = movie.poster_path?.startsWith("http")
     ? movie.poster_path
     : movie.poster_path
-      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-      : "/placeholder.svg?height=750&width=500&text=Movie+Poster"
+    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+    : "/placeholder.svg?height=750&width=500&text=Movie+Poster";
 
   const backdropUrl = movie.backdrop_path?.startsWith("http")
     ? movie.backdrop_path
     : movie.backdrop_path
-      ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
-      : "/placeholder.svg?height=1080&width=1920&text=Movie+Backdrop"
+    ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+    : "/placeholder.svg?height=1080&width=1920&text=Movie+Backdrop";
 
-  const director = credits?.crew?.find((person: any) => person.job === "Director")
-  const mainCast = credits?.cast?.slice(0, 6) || []
-  const trailer = videos?.results?.find((video: any) => video.type === "Trailer" && video.site === "YouTube")
+  const director = credits?.crew?.find(
+    (person: any) => person.job === "Director"
+  );
+  const mainCast = credits?.cast?.slice(0, 6) || [];
+  const trailer = videos?.results?.find(
+    (video: any) => video.type === "Trailer" && video.site === "YouTube"
+  );
 
   const formatRuntime = (minutes: number) => {
-    if (!minutes) return "N/A"
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    return `${hours}h ${mins}m`
-  }
+    if (!minutes) return "N/A";
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -275,7 +289,10 @@ export default function MovieDetails({ movieId, source = "tmdb", imdbId }: Movie
                 <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
                   <Button
                     size="lg"
-                    onClick={() => setShowPlayer(true)}
+                    onClick={() => {
+                      setShowPlayer(true);
+                      router.push(`/movie/${movie.id}/watch`);
+                    }}
                     className="bg-red-600 hover:bg-red-700 text-white px-6 lg:px-8"
                     disabled={movie.source === "fallback"}
                   >
