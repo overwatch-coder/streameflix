@@ -1,21 +1,21 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Star, Play, Heart, Share2, Calendar, Clock, AlertCircle } from "lucide-react"
-import { importMovieDetails } from "@/lib/tmdb"
-import { useFavorites } from "@/contexts/favorites-context"
-import { useAuth } from "@/contexts/auth-context"
-import Image from "next/image"
-import RealStreamingPlayer from "./real-streaming-player"
-import UserReviews from "./user-reviews"
-import MovieRecommendations from "./movie-recommendations"
-import VideoPlayer from "./video-player"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Star, Play, Heart, Share2, Calendar, Clock, AlertCircle } from "lucide-react";
+import { importMovieDetails } from "@/lib/tmdb";
+import { useFavorites } from "@/contexts/favorites-context";
+import { useAuth } from "@/contexts/auth-context";
+import Image from "next/image";
+import RealStreamingPlayer from "./real-streaming-player";
+import UserReviews from "./user-reviews";
+import MovieRecommendations from "./movie-recommendations";
+import VideoPlayer from "./video-player";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface MovieDetailsProps {
   movieId: string

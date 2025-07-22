@@ -102,8 +102,11 @@ export async function getMovieRecommendations(movieId: string) {
 }
 
 // TV functions
-export async function getTVShows(category: "popular" | "on_the_air" | "top_rated" | "airing_today", page = 1) {
-  return fetchFromTMDB(`/tv/${category}?page=${page}`)
+export async function getTVShows(
+  category: "popular" | "on_the_air" | "top_rated" | "airing_today",
+  page = 1
+) {
+  return fetchFromTMDB(`/tv/${category}?page=${page}`);
 }
 
 export async function getTVDetails(tvId: string) {

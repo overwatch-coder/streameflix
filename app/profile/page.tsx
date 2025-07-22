@@ -56,7 +56,7 @@ export default function ProfilePage() {
     name: user?.name || "",
     email: user?.email || "",
     bio: "Movie enthusiast and streaming lover",
-    avatar: user?.avatar || "/placeholder.svg",
+    avatar: user?.avatar || "",
   })
   const [newAvatar, setNewAvatar] = useState<File | null>(null)
 
@@ -95,7 +95,7 @@ export default function ProfilePage() {
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={profileData.avatar || "/placeholder.svg"} alt={user.name} />
+                <AvatarImage src={profileData.avatar} alt={user.name} />
                 <AvatarFallback className="bg-red-600 text-white text-2xl">
                   {user.name.charAt(0).toUpperCase()}
                 </AvatarFallback>

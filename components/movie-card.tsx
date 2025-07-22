@@ -24,8 +24,7 @@ interface MovieCardProps {
   movie: Movie;
 }
 
-export const placeholderImage =
-  "/default_poster.jpg";
+export const placeholderImage = "/default_poster.jpg";
 
 export default function MovieCard({ movie }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -100,6 +99,12 @@ export default function MovieCard({ movie }: MovieCardProps) {
                     {movie.overview || "No description available."}
                   </p>
                 </div>
+              </div>
+
+              <div className="absolute top-2 left-2 bg-red-600/80 rounded-full px-3 py-0.5 flex items-center gap-1 z-10">
+                <span className="text-[8px] text-white font-medium">
+                  {"Movie"}
+                </span>
               </div>
 
               {/* Rating Badge */}

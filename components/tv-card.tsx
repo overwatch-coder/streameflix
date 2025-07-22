@@ -102,6 +102,12 @@ export default function TVCard({ show }: TVCardProps) {
                 </div>
               </div>
 
+              <div className="absolute top-2 left-2 bg-red-600/80 rounded-full px-3 py-0.5 flex items-center gap-1 z-10">
+                <span className="text-[8px] text-white font-medium">
+                  {"TV"}
+                </span>
+              </div>
+
               {/* Rating Badge */}
               {rating > 0 && (
                 <div className="absolute top-2 right-2 bg-black/80 rounded-full px-2 py-1 flex items-center gap-1 z-10">

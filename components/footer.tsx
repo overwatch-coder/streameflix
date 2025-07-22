@@ -1,5 +1,7 @@
 import Link from "next/link"
-import { Facebook, Twitter, Instagram, Youtube } from "lucide-react"
+import { FaFacebook as Facebook, FaInstagram as Instagram, FaYoutube as Youtube } from "react-icons/fa";
+import { FaSquareXTwitter as Twitter } from "react-icons/fa6";
+
 
 export default function Footer() {
   return (

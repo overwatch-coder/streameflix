@@ -13,7 +13,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "yts.mx",
         port: "",
-      }
+      },
+      {
+        protocol: "https",
+        hostname: "img.youtube.com",
+        port: "",
+      },
     ],
   },
 };

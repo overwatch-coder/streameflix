@@ -320,11 +320,13 @@ export async function searchMoviesMultiSource(query: string, page = 1) {
       const omdbResults = await searchMoviesOMDB(query);
       if (omdbResults?.Search) {
         const standardized = omdbResults.Search.map(mapOMDBToStandard);
-        console.log({standardized, query});
-        allResults.push(...standardized.map((movie: any) => ({ ...movie, confidence: 0.7 })));
+        console.log({ standardized, query });
+        allResults.push(
+          ...standardized.map((movie: any) => ({ ...movie, confidence: 0.7 }))
+        );
       }
     } catch (error) {
-      console.log({error});
+      console.log({ error });
       errors.push(
         `OMDB search failed: ${
           error instanceof Error ? error.message : "Unknown error"
