@@ -28,6 +28,7 @@ import { getTVSeasonDetails } from "@/lib/tmdb";
 import MovieRecommendations from "@/components/movie-recommendations";
 import TVRecommendations from "@/components/tv-recommendations";
 import Image from "next/image";
+import { placeholderImage } from "./movie-card";
 
 interface MovieDetails {
   id: string;
@@ -161,9 +162,9 @@ export default function RealStreamingPlayer({
       ? show.overview
       : movie?.overview || "No overview available.";
 
-  const displayRuntime =
-    formatRuntime((isTVShow && show?.episode_run_time?.[0]) ||
-    movie?.runtime);
+  const displayRuntime = formatRuntime(
+    (isTVShow && show?.episode_run_time?.[0]) || movie?.runtime
+  );
 
   const displayGenres =
     ((isTVShow && show?.genres) || movie?.genres)
@@ -259,36 +260,38 @@ export default function RealStreamingPlayer({
         </div>
 
         {/* Next/Previous Episode Buttons for current season */}
-        <div className="flex flex-row w-full max-w-6xl justify-between -mt-4">
-          <Button
-            onClick={() => {
-              const i = episodes.findIndex(
-                (ep) => ep.episode_number === episode
-              );
-              const prev = episodes[i - 1];
-              if (prev) onEpisodeSelect?.(season, prev.episode_number);
-            }}
-            disabled={episode === 1}
-            variant="outline"
-            className="text-white border-gray-600 hover:bg-gray-700"
-          >
-            <ChevronLeft className="h-5 w-5 mr-2" /> Previous
-          </Button>
-          <Button
-            onClick={() => {
-              const i = episodes.findIndex(
-                (ep) => ep.episode_number === episode
-              );
-              const next = episodes[i + 1];
-              if (next) onEpisodeSelect?.(season, next.episode_number);
-            }}
-            disabled={episode === episodes.length}
-            variant="outline"
-            className="text-white border-gray-600 hover:bg-gray-700"
-          >
-            Next <ChevronRight className="h-5 w-5 ml-2" />
-          </Button>
-        </div>
+        {isTVShow && (
+          <div className="flex flex-row w-full max-w-6xl justify-between -mt-4">
+            <Button
+              onClick={() => {
+                const i = episodes.findIndex(
+                  (ep) => ep.episode_number === episode
+                );
+                const prev = episodes[i - 1];
+                if (prev) onEpisodeSelect?.(season, prev.episode_number);
+              }}
+              disabled={episode === 1}
+              variant="outline"
+              className="text-white border-gray-600 hover:bg-gray-700"
+            >
+              <ChevronLeft className="h-5 w-5 mr-2" /> Previous
+            </Button>
+            <Button
+              onClick={() => {
+                const i = episodes.findIndex(
+                  (ep) => ep.episode_number === episode
+                );
+                const next = episodes[i + 1];
+                if (next) onEpisodeSelect?.(season, next.episode_number);
+              }}
+              disabled={episode === episodes.length}
+              variant="outline"
+              className="text-white border-gray-600 hover:bg-gray-700"
+            >
+              Next <ChevronRight className="h-5 w-5 ml-2" />
+            </Button>
+          </div>
+        )}
 
         {/* Episodes */}
         {isTVShow && (
@@ -339,9 +342,13 @@ export default function RealStreamingPlayer({
                       height={108}
                     />
                   ) : (
-                    <div className="w-full h-32 bg-gray-700 flex items-center justify-center text-sm text-gray-300">
-                      No Image
-                    </div>
+                    <Image
+                      src={poster || placeholderImage}
+                      alt={ep.name || `Episode ${ep.episode_number}`}
+                      className="w-full h-32 object-cover"
+                      width={192}
+                      height={108}
+                    />
                   )}
                   <div className="p-2 text-sm bg-gray-800 text-white">
                     E{ep.episode_number.toString().padStart(2, "0")} -{" "}
