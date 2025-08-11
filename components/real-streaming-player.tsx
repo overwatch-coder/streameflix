@@ -82,6 +82,24 @@ export default function RealStreamingPlayer({
   const contentId = movieId || showId || "";
   const isTVShow = contentType === "tv";
 
+  const episodesSlideNext = useCallback(() => {
+    if (episodeListRef.current) {
+      episodeListRef.current.scrollBy({
+        left: 200,
+        behavior: "smooth",
+      });
+    }
+  }, []);
+
+  const episodesSlidePrev = useCallback(() => {
+    if (episodeListRef.current) {
+      episodeListRef.current.scrollBy({
+        left: -200,
+        behavior: "smooth",
+      });
+    }
+  }, []);
+
   const loadStreamingSources = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -297,28 +315,46 @@ export default function RealStreamingPlayer({
         {isTVShow && (
           <div className="w-full max-w-6xl">
             <div className="flex flex-row-reverse justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">
-                Episodes (Season {season})
-              </h2>
-              <Select
-                value={season.toString()}
-                onValueChange={(v) => onEpisodeSelect?.(parseInt(v), 1)}
-              >
-                <SelectTrigger className="w-[120px] bg-gray-800 text-white">
-                  <SelectValue placeholder={`Season ${season}`} />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700 text-white">
-                  {Array.from(
-                    { length: show?.number_of_seasons || 1 },
-                    (_, i) => (
-                      <SelectItem key={i + 1} value={(i + 1).toString()}>
-                        Season {i + 1}
-                      </SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={episodesSlidePrev}
+                  variant="outline"
+                  className="text-white border-gray-600 hover:bg-gray-700"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  onClick={episodesSlideNext}
+                  variant="outline"
+                  className="text-white border-gray-600 hover:bg-gray-700"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+
+              <div className="flex flex-col gap-2 items-start">
+                <p className="text-gray-400 text-sm">Select Season:</p>
+                <Select
+                  value={season.toString()}
+                  onValueChange={(v) => onEpisodeSelect?.(parseInt(v), 1)}
+                >
+                  <SelectTrigger className="w-[120px] bg-gray-800 text-white">
+                    <SelectValue placeholder={`Season ${season}`} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-900 border-gray-700 text-white">
+                    {Array.from(
+                      { length: show?.number_of_seasons || 1 },
+                      (_, i) => (
+                        <SelectItem key={i + 1} value={(i + 1).toString()}>
+                          Season {i + 1}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
             <div
               ref={episodeListRef}
               className="flex overflow-x-auto gap-4 pb-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900"
