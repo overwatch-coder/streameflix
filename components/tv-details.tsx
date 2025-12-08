@@ -371,7 +371,7 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                     mediaId={show.id.toString()}
                     mediaType="tv"
                     mediaTitle={show.name}
-                    mediaPoster={show.poster_path}
+                    mediaPoster={show?.poster_path || ""}
                   />
                 </TabsContent>
               </Tabs>
