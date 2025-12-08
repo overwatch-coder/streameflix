@@ -142,7 +142,10 @@ export default function RealStreamingPlayer({
        saveProgress(); 
     }, 60000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      saveProgress();
+    };
   }, [open, contentId, user, season, episode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const episodesSlideNext = useCallback(() => {

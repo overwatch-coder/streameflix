@@ -25,6 +25,8 @@ import VideoPlayer from "./video-player";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { placeholderImage } from "./movie-card";
+import SocialFeed from "./social-feed";
+import { ShareModal } from "./share-modal";
 
 interface MovieDetailsProps {
   movieId: string;
@@ -124,18 +126,6 @@ export default function MovieDetails({
     }
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: movie.title,
-        text: `Check out ${movie.title}`,
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center px-4">
@@ -195,6 +185,8 @@ export default function MovieDetails({
     const mins = minutes % 60;
     return `${hours}h ${mins}m`;
   };
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -335,15 +327,7 @@ export default function MovieDetails({
                     </Button>
                   )}
 
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={handleShare}
-                    className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-                  >
-                    <Share2 className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
-                    Share
-                  </Button>
+                  <ShareModal title={movie.title} url={shareUrl} />
                 </div>
               </div>
             </div>
@@ -354,7 +338,7 @@ export default function MovieDetails({
       {/* Content Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 lg:py-12">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5 bg-gray-800">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 bg-gray-800">
             <TabsTrigger
               value="overview"
               className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
@@ -378,6 +362,12 @@ export default function MovieDetails({
               className="data-[state=active]:bg-gray-700 text-xs sm:text-sm hidden lg:block"
             >
               Reviews
+            </TabsTrigger>
+            <TabsTrigger
+              value="discussion"
+              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm hidden lg:block"
+            >
+              Discussion
             </TabsTrigger>
             <TabsTrigger
               value="recommendations"
@@ -572,6 +562,15 @@ export default function MovieDetails({
 
           <TabsContent value="reviews" className="mt-6 lg:mt-8">
             <UserReviews movieId={movie.id} movieTitle={movie.title} />
+          </TabsContent>
+
+          <TabsContent value="discussion" className="mt-6 lg:mt-8">
+            <SocialFeed 
+               mediaId={movie.id} 
+               mediaType="movie" 
+               mediaTitle={movie.title}
+               mediaPoster={movie.poster_path}
+            />
           </TabsContent>
 
           <TabsContent value="recommendations" className="mt-6 lg:mt-8">

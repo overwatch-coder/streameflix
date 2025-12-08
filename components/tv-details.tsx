@@ -28,6 +28,7 @@ import { useFavorites } from "@/contexts/favorites-context";
 import Link from "next/link";
 import { placeholderImage } from "./movie-card";
 import { useRouter } from "next/navigation";
+import SocialFeed from "./social-feed";
 
 interface TVDetailsProps {
   show: TVDetailsType;
@@ -232,6 +233,12 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                   >
                     Trailer
                   </TabsTrigger>
+                  <TabsTrigger
+                    value="discussion"
+                    className="text-white data-[state=active]:bg-red-600"
+                  >
+                    Discussion
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
@@ -357,6 +364,15 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                   ) : (
                     <p className="text-gray-400">No trailer available</p>
                   )}
+                </TabsContent>
+
+                <TabsContent value="discussion">
+                  <SocialFeed
+                    mediaId={show.id.toString()}
+                    mediaType="tv"
+                    mediaTitle={show.name}
+                    mediaPoster={show.poster_path}
+                  />
                 </TabsContent>
               </Tabs>
             </div>
