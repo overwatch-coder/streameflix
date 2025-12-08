@@ -33,7 +33,7 @@ export const streamingSources: StreamingSource[] = [
     name: "Embed.su",
     baseUrl: "https://embed.su",
     embedUrl: {
-      movie: "https://embed.su/embed/movie/{id}", 
+      movie: "https://embed.su/embed/movie/{id}",
       tv: "https://embed.su/embed/tv/{id}/{season}/{episode}",
     },
     isWorking: true,
@@ -51,7 +51,21 @@ export const streamingSources: StreamingSource[] = [
       tv: "https://vidsrc.xyz/embed/tv?imdb={id}&s={season}&e={episode}",
     },
     isWorking: true,
-    priority: 3,
+    priority: 5,
+    supportsQuality: true,
+    supportsSubtitles: true,
+    idType: "tmdb",
+  },
+  {
+    id: "vidsrc.net",
+    name: "VidSrc.net",
+    baseUrl: "https://vidsrc.net",
+    embedUrl: {
+      movie: "https://vidsrc.net/embed/movie/{id}",
+      tv: "https://vidsrc.net/embed/tv?imdb={id}&s={season}&e={episode}",
+    },
+    isWorking: true,
+    priority: 6,
     supportsQuality: true,
     supportsSubtitles: true,
     idType: "tmdb",
@@ -66,16 +80,16 @@ export const streamingSources: StreamingSource[] = [
     },
     isWorking: true,
     priority: 4,
-    supportsQuality: true, 
+    supportsQuality: true,
     supportsSubtitles: true,
     idType: "tmdb",
   },
   {
-    id: "vidlink.pro", 
+    id: "vidlink.pro",
     name: "VidLink.pro",
     baseUrl: "https://vidlink.pro",
     embedUrl: {
-      movie: "https://vidlink.pro/movie/{id}", 
+      movie: "https://vidlink.pro/movie/{id}",
       tv: "https://vidlink.pro/tv/{id}/{season}/{episode}",
     },
     isWorking: true,
@@ -89,17 +103,32 @@ export const streamingSources: StreamingSource[] = [
     name: "MultiEmbed",
     baseUrl: "https://multiembed.mov",
     embedUrl: {
-      movie: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1", 
+      movie: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1",
       tv: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1&s={season}&e={episode}",
     },
     isWorking: true,
     priority: 6,
-    supportsQuality: false, 
+    priority: 8,
+    supportsQuality: false,
     supportsSubtitles: false,
-    idType: "tmdb"
+    idType: "tmdb",
   },
   {
-    id: "smashystream", 
+    id: "vidlink.pro",
+    name: "VidLink.pro",
+    baseUrl: "https://vidlink.pro",
+    embedUrl: {
+      movie: "https://vidlink.pro/movie/{id}",
+      tv: "",
+    },
+    isWorking: true,
+    priority: 9,
+    supportsQuality: true,
+    supportsSubtitles: false,
+    idType: "imdb",
+  },
+  {
+    id: "smashystream",
     name: "SmashyStream",
     baseUrl: "https://player.smashy.stream",
     embedUrl: {
@@ -107,7 +136,7 @@ export const streamingSources: StreamingSource[] = [
       tv: "https://player.smashy.stream/tv/{id}?s={season}&e={episode}",
     },
     isWorking: true,
-    priority: 7,
+    priority: 10,
     supportsQuality: true,
     supportsSubtitles: false,
     idType: "tmdb",
@@ -124,14 +153,14 @@ export const streamingSources: StreamingSource[] = [
     priority: 99,
     supportsQuality: false,
     supportsSubtitles: false,
-    idType: "tmdb"
-  }
+    idType: "tmdb",
+  },
 ];
 
 export function getStreamingUrl(
-  contentId: string, 
+  contentId: string,
   sourceId: string,
-  imdbId?: string 
+  imdbId?: string
 ): string {
   const source = streamingSources.find((s) => s.id === sourceId);
   if (!source || !source.embedUrl.movie) return "";
@@ -145,7 +174,7 @@ export function getStreamingUrl(
 }
 
 export function getTVStreamingUrl(
-  showId: string, 
+  showId: string,
   season: number,
   episode: number,
   sourceId: string,
@@ -169,14 +198,16 @@ export function getTVStreamingUrl(
 }
 
 export async function getStreamingUrls(
-  contentId: string, 
+  contentId: string,
   type: "movie" | "tv",
   season?: number,
   episode?: number,
-  imdbId?: string, 
+  imdbId?: string,
   episodeOption?: "individual" | "full-season"
 ): Promise<string[]> {
-  const workingSources = streamingSources.filter((source) => source.isWorking).sort((a, b) => a.priority - b.priority);
+  const workingSources = streamingSources
+    .filter((source) => source.isWorking)
+    .sort((a, b) => a.priority - b.priority);
   const urls: string[] = [];
 
   for (const source of workingSources) {
