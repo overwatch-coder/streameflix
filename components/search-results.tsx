@@ -6,8 +6,8 @@ import { searchMovies, getMoviesByGenre, discoverMovies } from "@/lib/tmdb"
 import MovieCard from "./movie-card"
 import Pagination from "./pagination"
 import AdvancedSearchFilters from "./advanced-search-filters"
-import LoadingSpinner from "./loading-spinner"
 import type { Movie } from "@/types/movie"
+import MovieCardSkeleton from "@/components/skeletons/movie-card-skeleton"
 
 interface SearchResultsProps {
   query: string
@@ -128,17 +128,15 @@ export default function SearchResults({ query, genre, year, sortBy, page }: Sear
     router.push("/search")
   }
 
-  if (isLoading) {
-    return <LoadingSpinner />
-  }
-
   return (
     <div className="space-y-6">
       {/* Results Header */}
       <div className="flex items-center justify-between">
         <div>
           <p className="text-gray-400">
-            {totalResults > 0 ? (
+            {isLoading ? (
+               "Searching..."
+            ) : totalResults > 0 ? (
               <>
                 Showing {movies.length} of {totalResults.toLocaleString()} results
                 {query && ` for "${query}"`}
@@ -160,7 +158,13 @@ export default function SearchResults({ query, genre, year, sortBy, page }: Sear
       </div>
 
       {/* Results Grid */}
-      {movies.length > 0 ? (
+      {isLoading ? (
+         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {[...Array(12)].map((_, i) => (
+               <MovieCardSkeleton key={i} />
+            ))}
+         </div>
+      ) : movies.length > 0 ? (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {movies.map((movie) => (

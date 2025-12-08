@@ -8,8 +8,8 @@ import { Eye, EyeOff, Mail, Lock, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase"
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -21,9 +21,8 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-
-  const { login } = useAuth()
   const router = useRouter()
+  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,16 +36,29 @@ export default function RegisterForm() {
     }
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      login({
-        id: "1",
+      const { error } = await supabase.auth.signUp({
         email: formData.email,
-        name: formData.name,
-        avatar: "/placeholder.svg?height=40&width=40",
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.name,
+            avatar_url: "/placeholder.svg?height=40&width=40",
+          },
+        },
       })
-      router.push("/")
+
+      if (error) {
+        setError(error.message)
+      } else {
+        // Check if session was created (auto sign in) or if email confirmation is required
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          router.push("/")
+          router.refresh()
+        } else {
+          setError("Account created! Please check your email to confirm.")
+        }
+      }
     } catch (err) {
       setError("Something went wrong. Please try again.")
     } finally {

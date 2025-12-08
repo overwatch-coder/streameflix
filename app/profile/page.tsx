@@ -2,9 +2,10 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
-import { Mail, Calendar, Heart, Clock, Settings, Edit } from "lucide-react"
+import { useFavorites } from "@/contexts/favorites-context"
+import { Mail, Calendar, Heart, Clock, Settings, Edit, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -16,61 +17,49 @@ import MovieCard from "@/components/movie-card"
 import { redirect } from "next/navigation"
 import { Progress } from "@/components/ui/progress"
 import Image from "next/image"
-
-// Mock data for demonstration
-const mockFavorites = [
-  {
-    id: 1,
-    title: "The Dark Knight",
-    poster_path: "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
-    release_date: "2008-07-18",
-    vote_average: 9.0,
-    overview: "Batman raises the stakes in his war on crime...",
-  },
-  {
-    id: 2,
-    title: "Inception",
-    poster_path: "/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg",
-    release_date: "2010-07-16",
-    vote_average: 8.8,
-    overview: "Dom Cobb is a skilled thief, the absolute best...",
-  },
-]
-
-const mockWatchHistory = [
-  {
-    id: 3,
-    title: "Interstellar",
-    poster_path: "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
-    release_date: "2014-11-07",
-    vote_average: 8.6,
-    watchedAt: "2024-01-15",
-    progress: 85,
-  },
-]
+import Link from "next/link"
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
+  const { favorites, continueWatching, isLoading: dataLoading } = useFavorites()
   const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
+    name: "",
+    email: "",
     bio: "Movie enthusiast and streaming lover",
-    avatar: user?.avatar || "",
+    avatar: "",
   })
   const [newAvatar, setNewAvatar] = useState<File | null>(null)
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        name: user.name || "",
+        email: user.email || "",
+        bio: "Movie enthusiast and streaming lover",
+        avatar: user.avatar || "",
+      })
+    }
+  }, [user])
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-black pt-20 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+      </div>
+    )
+  }
 
   if (!user) {
     redirect("/auth/login")
   }
 
   const handleSave = async () => {
-    // Here you would typically save to your backend
-    // and handle image upload
+    // In a real app, you would upload the image to Supabase Storage and update the user metadata
     if (newAvatar) {
       // Simulate image upload
       await new Promise((resolve) => setTimeout(resolve, 500))
-      alert("Profile updated successfully!")
+      alert("Profile updated successfully! (Simulation)")
     }
     setIsEditing(false)
   }
@@ -103,7 +92,7 @@ export default function ProfilePage() {
 
               <div className="flex-1 text-center md:text-left">
                 {isEditing ? (
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-w-md">
                     <div>
                       <Label htmlFor="name" className="text-white">
                         Name
@@ -158,17 +147,17 @@ export default function ProfilePage() {
                       </div>
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        Joined January 2024
+                        Joined {new Date().getFullYear()}
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2 mb-4">
                       <Badge variant="secondary" className="bg-red-600 text-white">
                         <Heart className="h-3 w-3 mr-1" />
-                        {mockFavorites.length} Favorites
+                        {favorites.length} Favorites
                       </Badge>
                       <Badge variant="secondary" className="bg-blue-600 text-white">
                         <Clock className="h-3 w-3 mr-1" />
-                        {mockWatchHistory.length} Watched
+                        {continueWatching.length} Watched
                       </Badge>
                     </div>
                     <Button
@@ -206,10 +195,27 @@ export default function ProfilePage() {
                 <CardTitle className="text-white">My Favorites</CardTitle>
               </CardHeader>
               <CardContent>
-                {mockFavorites.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-10">
-                    {mockFavorites.map((movie) => (
-                      <MovieCard key={movie.id} movie={movie} />
+                {dataLoading ? (
+                   <div className="text-center py-12 text-gray-400">Loading favorites...</div>
+                ) : favorites.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-6">
+                    {favorites.map((fav) => (
+                       // Convert favorite to movie format expected by MovieCard
+                       // Note: MovieCard expects 'Movie' type, we need to adapt slightly or ensure compatibility
+                      <div key={fav.id} className="relative group">
+                          <Link href={`/${fav.type}/${fav.id}`}>
+                             <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2">
+                                <Image
+                                  src={`https://image.tmdb.org/t/p/w500${fav.poster_path}`}
+                                  alt={fav.title}
+                                  fill
+                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                             </div>
+                             <h3 className="text-white text-sm font-medium truncate">{fav.title}</h3>
+                             <p className="text-gray-400 text-xs capitalize">{fav.type}</p>
+                          </Link>
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -228,34 +234,58 @@ export default function ProfilePage() {
                 <CardTitle className="text-white">Watch History</CardTitle>
               </CardHeader>
               <CardContent>
-                {mockWatchHistory.length > 0 ? (
+                {dataLoading ? (
+                   <div className="text-center py-12 text-gray-400">Loading history...</div>
+                ) : continueWatching.length > 0 ? (
                   <div className="space-y-4">
-                    {mockWatchHistory.map((movie) => (
-                      <div key={movie.id} className="flex items-center gap-4 p-4 bg-gray-800 rounded-lg">
-                        <div className="w-16 h-24 relative rounded overflow-hidden">
-                          <Image
-                            src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
-                            alt={movie.title}
+                    {continueWatching.map((item) => {
+                       const progressPercent = item.duration > 0 
+                          ? Math.min(100, Math.max(0, (item.progress / item.duration) * 100)) 
+                          : 0;
+                       
+                       const linkHref = item.type === "movie"
+                          ? `/movie/${item.id}/watch`
+                          : `/tv/${item.id}/watch?season=${item.seasonNumber || 1}&episode=${item.episodeNumber || 1}`;
+
+                       return (
+                      <div key={`${item.type}-${item.id}`} className="flex items-center gap-4 p-4 bg-gray-800 rounded-lg hover:bg-gray-750 transition-colors">
+                        <div className="w-24 h-14 sm:w-32 sm:h-20 relative rounded overflow-hidden flex-shrink-0">
+                          {item.poster_path ? (
+                            <Image
+                            src={`https://image.tmdb.org/t/p/w300${item.poster_path}`}
+                            alt={item.title}
                             className="w-full h-full object-cover"
-                            width={200}
-                            height={300}
+                            width={128}
+                            height={72}
                           />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-white font-semibold">{movie.title}</h3>
-                          <p className="text-gray-400 text-sm">Watched on {movie.watchedAt}</p>
-                          <div className="mt-2">
-                            <div className="flex items-center gap-2 text-sm text-gray-400">
-                              <span>Progress: {movie.progress}%</span>
-                            </div>
-                            <Progress value={movie.progress} className="mt-1" />
+                          ) : (
+                             <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                                <span className="text-xs text-gray-400">No Image</span>
+                             </div>
+                          )}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity">
+                             <Play className="w-8 h-8 text-white" />
                           </div>
                         </div>
-                        <Button size="sm" className="bg-red-600 hover:bg-red-700">
-                          Continue
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-white font-semibold truncate">{item.title}</h3>
+                          {item.type === 'tv' && (
+                             <p className="text-gray-400 text-xs">S{item.seasonNumber} E{item.episodeNumber}</p>
+                          )}
+                          <p className="text-gray-500 text-xs mt-1">
+                             Last watched: {new Date(item.lastWatched).toLocaleDateString()}
+                          </p>
+                          <div className="mt-2 max-w-md">
+                            <Progress value={progressPercent} className="h-1.5" />
+                          </div>
+                        </div>
+                        <Button size="sm" className="bg-red-600 hover:bg-red-700 flex-shrink-0" asChild>
+                          <Link href={linkHref}>
+                            Continue
+                          </Link>
                         </Button>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 ) : (
                   <div className="text-center py-12">
@@ -301,11 +331,11 @@ export default function ProfilePage() {
                   <h3 className="text-white font-semibold">Privacy</h3>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-300">Make profile public</span>
-                    <input type="checkbox" className="toggle" />
+                    <input type="checkbox" className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-red-600 focus:ring-red-500" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-300">Show watch history</span>
-                    <input type="checkbox" className="toggle" />
+                    <input type="checkbox" className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-red-600 focus:ring-red-500" />
                   </div>
                 </div>
 

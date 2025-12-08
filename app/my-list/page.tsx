@@ -30,6 +30,7 @@ export default function MyListPage() {
     removeFromFavorites,
     removeFromWatchlist,
     removeFromContinueWatching,
+    isLoading,
   } = useFavorites();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("dateAdded");
@@ -91,6 +92,14 @@ export default function MyListPage() {
         break;
     }
   };
+
+  if (isLoading) {
+     return (
+        <div className="min-h-screen bg-black pt-20 flex items-center justify-center">
+           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+        </div>
+     )
+  }
 
   return (
     <div className="min-h-screen bg-black pt-20">
@@ -228,7 +237,7 @@ export default function MyListPage() {
                             size="sm"
                             variant="outline"
                             onClick={() =>
-                              handleRemoveFromList(item.id, "continue")
+                              handleRemoveFromList(Number(item.id), "continue")
                             }
                             className="border-gray-600 text-gray-400 hover:text-white hover:bg-gray-700"
                           >

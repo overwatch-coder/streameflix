@@ -1,7 +1,7 @@
 import Hero from "@/components/hero";
 import MovieSection from "@/components/movie-section";
 import TVSection from "@/components/tv-section";
-import Footer from "@/components/footer";
+import ContinueWatchingSection from "@/components/continue-watching-section";
 import {
   getTrendingMovies,
   getPopularMovies,
@@ -31,7 +31,9 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-black">
       <Hero trendingMovies={trendingMovies} />
+      
       <div className="space-y-8 pb-8">
+        <ContinueWatchingSection />
         <MovieSection title="Trending Movies" movies={trendingMovies.results} />
         <MovieSection title="Popular Movies" movies={popularMovies.results} />
         <TVSection title="Trending TV Shows" shows={trendingTV.results} />

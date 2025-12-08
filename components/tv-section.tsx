@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import TVCard from "./tv-card"
 import { Card } from "./ui/card"
+import MovieCardSkeleton from "@/components/skeletons/movie-card-skeleton"
 
 interface TVShow {
   id: number
@@ -18,9 +19,10 @@ interface TVShow {
 interface TVSectionProps {
   title: string
   shows: TVShow[]
+  loading?: boolean
 }
 
-export default function TVSection({ title, shows }: TVSectionProps) {
+export default function TVSection({ title, shows, loading }: TVSectionProps) {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -44,6 +46,23 @@ export default function TVSection({ title, shows }: TVSectionProps) {
     const container = scrollContainerRef.current
     setCanScrollLeft(container.scrollLeft > 0)
     setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth - 10)
+  }
+
+  if (loading) {
+    return (
+      <section className="relative group">
+        <div className="px-4 md:px-8 mb-4">
+          <h2 className="text-2xl font-bold text-white">{title}</h2>
+        </div>
+        <div className="flex gap-4 overflow-hidden px-4 md:px-8 pb-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex-none w-[160px] md:w-[200px]">
+              <MovieCardSkeleton />
+            </div>
+          ))}
+        </div>
+      </section>
+    );
   }
 
   if (!shows || shows.length === 0) {

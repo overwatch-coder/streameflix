@@ -4,7 +4,8 @@ import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MovieCard from "./movie-card";
-import { Card, CardContent } from "./ui/card";
+import { Card } from "./ui/card";
+import MovieCardSkeleton from "@/components/skeletons/movie-card-skeleton";
 
 interface Movie {
   id: number;
@@ -18,9 +19,10 @@ interface Movie {
 interface MovieSectionProps {
   title: string;
   movies: Movie[];
+  loading?: boolean;
 }
 
-export default function MovieSection({ title, movies }: MovieSectionProps) {
+export default function MovieSection({ title, movies, loading }: MovieSectionProps) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -47,6 +49,23 @@ export default function MovieSection({ title, movies }: MovieSectionProps) {
       container.scrollLeft < container.scrollWidth - container.clientWidth - 10
     );
   };
+
+  if (loading) {
+    return (
+      <section className="relative group">
+        <div className="px-4 md:px-8 mb-4">
+          <h2 className="text-2xl font-bold text-white">{title}</h2>
+        </div>
+        <div className="flex gap-4 overflow-hidden px-4 md:px-8 pb-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex-none w-[160px] md:w-[200px]">
+              <MovieCardSkeleton />
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   if (!movies || movies.length === 0) {
     return null;

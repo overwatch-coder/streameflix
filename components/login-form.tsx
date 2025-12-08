@@ -8,8 +8,8 @@ import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -17,9 +17,8 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const { login } = useAuth();
   const router = useRouter();
+  const supabase = createClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,19 +26,16 @@ export default function LoginForm() {
     setError("");
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (email === "demo@StreameFlix.com" && password === "password") {
-        login({
-          id: "1",
-          email: email,
-          name: "Demo User",
-          avatar: "/placeholder.svg?height=40&width=40",
-        });
-        router.push("/");
+      if (error) {
+        setError(error.message);
       } else {
-        setError("Invalid email or password");
+        router.push("/");
+        router.refresh(); // Refresh to update server components/auth state
       }
     } catch (err: any) {
       setError("Something went wrong. Please try again.");
@@ -110,12 +106,6 @@ export default function LoginForm() {
       >
         {isLoading ? "Signing in..." : "Sign In"}
       </Button>
-
-      <div className="text-center">
-        <p className="text-sm text-gray-400">
-          Demo credentials: demo@StreameFlix.com / password
-        </p>
-      </div>
 
       <p className="text-sm mx-auto w-full text-center text-gray-400 hover:text-white transition-colors">
         Don&apos;t have an account?{" "}
