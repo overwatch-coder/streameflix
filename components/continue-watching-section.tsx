@@ -31,16 +31,19 @@ export default function ContinueWatchingSection() {
   };
 
   if (isLoading) {
-     return (
-        <div className="container mx-auto px-4 py-8 space-y-4">
-           <div className="h-8 w-48 bg-gray-800 rounded animate-pulse"></div>
-           <div className="flex gap-4 overflow-hidden">
-              {[1, 2, 3, 4].map((i) => (
-                 <div key={i} className="w-64 h-36 bg-gray-800 rounded-lg animate-pulse flex-shrink-0"></div>
-              ))}
-           </div>
+    return (
+      <div className="container mx-auto px-4 py-8 space-y-4">
+        <div className="h-8 w-48 bg-gray-800 rounded animate-pulse"></div>
+        <div className="flex gap-4 overflow-hidden">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="w-64 h-36 bg-gray-800 rounded-lg animate-pulse flex-shrink-0"
+            ></div>
+          ))}
         </div>
-     )
+      </div>
+    );
   }
 
   return (
@@ -77,7 +80,10 @@ export default function ContinueWatchingSection() {
         {continueWatching.map((item) => {
           const progressPercent =
             item.duration > 0
-              ? Math.min(100, Math.max(0, (item.progress / item.duration) * 100))
+              ? Math.min(
+                  100,
+                  Math.max(0, (item.progress / item.duration) * 100),
+                )
               : 0;
 
           const linkHref =
@@ -89,7 +95,7 @@ export default function ContinueWatchingSection() {
             <Link
               href={linkHref}
               key={`${item.type}-${item.id}`}
-              className="flex-shrink-0 w-72 group relative snap-start"
+              className="flex-shrink-0 basis-[85%] sm:basis-[45%] lg:basis-[23.5%] xl:basis-[19%] group relative snap-start"
             >
               <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-900 border border-gray-800 transition-transform duration-300 group-hover:scale-105 group-hover:border-red-600 z-0 group-hover:z-10 shadow-lg">
                 {item.poster_path ? (
@@ -104,9 +110,9 @@ export default function ContinueWatchingSection() {
                     No Image
                   </div>
                 )}
-                
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                
+
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="bg-red-600 rounded-full p-3 shadow-lg transform scale-0 group-hover:scale-100 transition-transform">
                     <Play className="h-6 w-6 text-white fill-current" />
@@ -117,12 +123,15 @@ export default function ContinueWatchingSection() {
                   <h3 className="text-white font-semibold text-sm truncate mb-1">
                     {item.title}
                   </h3>
-                  {item.type === 'tv' && (
-                     <p className="text-xs text-gray-300 mb-2">
-                        S{item.seasonNumber} E{item.episodeNumber}
-                     </p>
+                  {item.type === "tv" && (
+                    <p className="text-xs text-gray-300 mb-2">
+                      S{item.seasonNumber} E{item.episodeNumber}
+                    </p>
                   )}
-                  <Progress value={progressPercent} className="h-1 bg-gray-700" />
+                  <Progress
+                    value={progressPercent}
+                    className="h-1 bg-gray-700"
+                  />
                 </div>
               </div>
             </Link>

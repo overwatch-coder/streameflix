@@ -22,7 +22,11 @@ interface MovieSectionProps {
   loading?: boolean;
 }
 
-export default function MovieSection({ title, movies, loading }: MovieSectionProps) {
+export default function MovieSection({
+  title,
+  movies,
+  loading,
+}: MovieSectionProps) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -46,7 +50,7 @@ export default function MovieSection({ title, movies, loading }: MovieSectionPro
     const container = scrollContainerRef.current;
     setCanScrollLeft(container.scrollLeft > 0);
     setCanScrollRight(
-      container.scrollLeft < container.scrollWidth - container.clientWidth - 10
+      container.scrollLeft < container.scrollWidth - container.clientWidth - 10,
     );
   };
 
@@ -58,7 +62,10 @@ export default function MovieSection({ title, movies, loading }: MovieSectionPro
         </div>
         <div className="flex gap-4 overflow-hidden px-4 md:px-8 pb-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex-none w-[160px] md:w-[200px]">
+            <div
+              key={i}
+              className="flex-none basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/5 pr-4"
+            >
               <MovieCardSkeleton />
             </div>
           ))}
@@ -110,7 +117,10 @@ export default function MovieSection({ title, movies, loading }: MovieSectionPro
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {movies.map((movie) => (
-            <div key={movie.id} className="flex-none relative">
+            <div
+              key={movie.id}
+              className="flex-none relative basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/5 pr-4"
+            >
               <MovieCard movie={movie} />
             </div>
           ))}

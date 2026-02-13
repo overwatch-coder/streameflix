@@ -1,52 +1,54 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import TVCard from "./tv-card"
-import { Card } from "./ui/card"
-import MovieCardSkeleton from "@/components/skeletons/movie-card-skeleton"
+import { useState, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import TVCard from "./tv-card";
+import { Card } from "./ui/card";
+import MovieCardSkeleton from "@/components/skeletons/movie-card-skeleton";
 
 interface TVShow {
-  id: number
-  name: string
-  poster_path: string
-  vote_average: number
-  first_air_date: string
-  overview: string
+  id: number;
+  name: string;
+  poster_path: string;
+  vote_average: number;
+  first_air_date: string;
+  overview: string;
 }
 
 interface TVSectionProps {
-  title: string
-  shows: TVShow[]
-  loading?: boolean
+  title: string;
+  shows: TVShow[];
+  loading?: boolean;
 }
 
 export default function TVSection({ title, shows, loading }: TVSectionProps) {
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(true)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
-    if (!scrollContainerRef.current) return
+    if (!scrollContainerRef.current) return;
 
-    const container = scrollContainerRef.current
-    const scrollAmount = container.clientWidth * 0.8
+    const container = scrollContainerRef.current;
+    const scrollAmount = container.clientWidth * 0.8;
 
     if (direction === "left") {
-      container.scrollBy({ left: -scrollAmount, behavior: "smooth" })
+      container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
     } else {
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" })
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
-  }
+  };
 
   const handleScroll = () => {
-    if (!scrollContainerRef.current) return
+    if (!scrollContainerRef.current) return;
 
-    const container = scrollContainerRef.current
-    setCanScrollLeft(container.scrollLeft > 0)
-    setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth - 10)
-  }
+    const container = scrollContainerRef.current;
+    setCanScrollLeft(container.scrollLeft > 0);
+    setCanScrollRight(
+      container.scrollLeft < container.scrollWidth - container.clientWidth - 10,
+    );
+  };
 
   if (loading) {
     return (
@@ -56,7 +58,10 @@ export default function TVSection({ title, shows, loading }: TVSectionProps) {
         </div>
         <div className="flex gap-4 overflow-hidden px-4 md:px-8 pb-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex-none w-[160px] md:w-[200px]">
+            <div
+              key={i}
+              className="flex-none basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/5 pr-4"
+            >
               <MovieCardSkeleton />
             </div>
           ))}
@@ -66,7 +71,7 @@ export default function TVSection({ title, shows, loading }: TVSectionProps) {
   }
 
   if (!shows || shows.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -108,7 +113,10 @@ export default function TVSection({ title, shows, loading }: TVSectionProps) {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {shows.map((show) => (
-            <div key={show.id} className="flex-none relative">
+            <div
+              key={show.id}
+              className="flex-none relative basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/5 pr-4"
+            >
               <TVCard show={show} />
             </div>
           ))}
