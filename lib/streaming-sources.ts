@@ -29,12 +29,12 @@ export const streamingSources: StreamingSource[] = [
     idType: "tmdb",
   },
   {
-    id: "embed.su",
-    name: "Embed.su",
-    baseUrl: "https://embed.su",
+    id: "superembed",
+    name: "SuperEmbed",
+    baseUrl: "https://superembed.stream",
     embedUrl: {
-      movie: "https://embed.su/embed/movie/{id}",
-      tv: "https://embed.su/embed/tv/{id}/{season}/{episode}",
+      movie: "https://superembed.stream/embed/movie/{id}",
+      tv: "https://superembed.stream/embed/tv/{id}/{season}/{episode}",
     },
     isWorking: true,
     priority: 2,
@@ -43,12 +43,40 @@ export const streamingSources: StreamingSource[] = [
     idType: "tmdb",
   },
   {
-    id: "vidsrc.xyz",
-    name: "VidSrc.xyz",
-    baseUrl: "https://vidsrc.xyz",
+    id: "embed.su",
+    name: "Embed.su",
+    baseUrl: "https://embed.su",
     embedUrl: {
-      movie: "https://vidsrc.xyz/embed/movie/{id}",
-      tv: "https://vidsrc.xyz/embed/tv?imdb={id}&s={season}&e={episode}",
+      movie: "https://embed.su/embed/movie/{id}",
+      tv: "https://embed.su/embed/tv/{id}/{season}/{episode}",
+    },
+    isWorking: true,
+    priority: 3,
+    supportsQuality: true,
+    supportsSubtitles: true,
+    idType: "tmdb",
+  },
+  {
+    id: "vidlink.pro",
+    name: "VidLink.pro",
+    baseUrl: "https://vidlink.pro",
+    embedUrl: {
+      movie: "https://vidlink.pro/movie/{id}",
+      tv: "https://vidlink.pro/tv/{id}/{season}/{episode}",
+    },
+    isWorking: true,
+    priority: 4,
+    supportsQuality: true,
+    supportsSubtitles: false,
+    idType: "tmdb",
+  },
+  {
+    id: "godriveplayer",
+    name: "GoDrivePlayer",
+    baseUrl: "https://godriveplayer.com",
+    embedUrl: {
+      movie: "https://godriveplayer.com/embed/movie/{id}",
+      tv: "https://godriveplayer.com/embed/tv/{id}/{season}/{episode}",
     },
     isWorking: true,
     priority: 5,
@@ -57,12 +85,12 @@ export const streamingSources: StreamingSource[] = [
     idType: "tmdb",
   },
   {
-    id: "vidsrc.net",
-    name: "VidSrc.net",
-    baseUrl: "https://vidsrc.net",
+    id: "2embed",
+    name: "2Embed.cc",
+    baseUrl: "https://www.2embed.cc",
     embedUrl: {
-      movie: "https://vidsrc.net/embed/movie/{id}",
-      tv: "https://vidsrc.net/embed/tv?imdb={id}&s={season}&e={episode}",
+      movie: "https://www.2embed.cc/embed/{id}",
+      tv: "https://www.2embed.cc/embed/{id}/{season}/{episode}",
     },
     isWorking: true,
     priority: 6,
@@ -79,52 +107,38 @@ export const streamingSources: StreamingSource[] = [
       tv: "https://vidsrc.vip/embed/tv/{id}/{season}/{episode}",
     },
     isWorking: true,
-    priority: 4,
+    priority: 7,
     supportsQuality: true,
     supportsSubtitles: true,
     idType: "tmdb",
   },
   {
-    id: "vidlink.pro",
-    name: "VidLink.pro",
-    baseUrl: "https://vidlink.pro",
+    id: "vidsrc.xyz",
+    name: "VidSrc.xyz",
+    baseUrl: "https://vidsrc.xyz",
     embedUrl: {
-      movie: "https://vidlink.pro/movie/{id}",
-      tv: "https://vidlink.pro/tv/{id}/{season}/{episode}",
-    },
-    isWorking: true,
-    priority: 3,
-    supportsQuality: true,
-    supportsSubtitles: false,
-    idType: "tmdb",
-  },
-  {
-    id: "multiembed.mov",
-    name: "MultiEmbed",
-    baseUrl: "https://multiembed.mov",
-    embedUrl: {
-      movie: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1",
-      tv: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1&s={season}&e={episode}",
+      movie: "https://vidsrc.xyz/embed/movie/{id}",
+      tv: "https://vidsrc.xyz/embed/tv?imdb={id}&s={season}&e={episode}",
     },
     isWorking: true,
     priority: 8,
-    supportsQuality: false,
-    supportsSubtitles: false,
+    supportsQuality: true,
+    supportsSubtitles: true,
     idType: "tmdb",
   },
   {
-    id: "vidlink.pro",
-    name: "VidLink.pro",
-    baseUrl: "https://vidlink.pro",
+    id: "vidsrc.net",
+    name: "VidSrc.net",
+    baseUrl: "https://vidsrc.net",
     embedUrl: {
-      movie: "https://vidlink.pro/movie/{id}",
-      tv: "",
+      movie: "https://vidsrc.net/embed/movie/{id}",
+      tv: "https://vidsrc.net/embed/tv?imdb={id}&s={season}&e={episode}",
     },
     isWorking: true,
     priority: 9,
     supportsQuality: true,
-    supportsSubtitles: false,
-    idType: "imdb",
+    supportsSubtitles: true,
+    idType: "tmdb",
   },
   {
     id: "smashystream",
@@ -141,15 +155,15 @@ export const streamingSources: StreamingSource[] = [
     idType: "tmdb",
   },
   {
-    id: "superembed",
-    name: "SuperEmbed",
-    baseUrl: "https://superembed.stream",
+    id: "multiembed.mov",
+    name: "MultiEmbed",
+    baseUrl: "https://multiembed.mov",
     embedUrl: {
-      movie: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1", // Often similar backend
-      tv: "",
+      movie: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1",
+      tv: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1&s={season}&e={episode}",
     },
-    isWorking: false, // Often redundant
-    priority: 99,
+    isWorking: true,
+    priority: 11,
     supportsQuality: false,
     supportsSubtitles: false,
     idType: "tmdb",
@@ -159,7 +173,7 @@ export const streamingSources: StreamingSource[] = [
 export function getStreamingUrl(
   contentId: string,
   sourceId: string,
-  imdbId?: string
+  imdbId?: string,
 ): string {
   const source = streamingSources.find((s) => s.id === sourceId);
   if (!source || !source.embedUrl.movie) return "";
@@ -178,7 +192,7 @@ export function getTVStreamingUrl(
   episode: number,
   sourceId: string,
   imdbId?: string,
-  episodeOption?: "individual" | "full-season"
+  episodeOption?: "individual" | "full-season",
 ): string {
   const source = streamingSources.find((s) => s.id === sourceId);
   if (!source || !source.embedUrl.tv) return "";
@@ -202,7 +216,7 @@ export async function getStreamingUrls(
   season?: number,
   episode?: number,
   imdbId?: string,
-  episodeOption?: "individual" | "full-season"
+  episodeOption?: "individual" | "full-season",
 ): Promise<string[]> {
   const workingSources = streamingSources
     .filter((source) => source.isWorking)
@@ -221,7 +235,7 @@ export async function getStreamingUrls(
           episode || 1,
           source.id,
           imdbId,
-          episodeOption
+          episodeOption,
         );
       }
 
@@ -236,7 +250,7 @@ export async function getStreamingUrls(
 }
 
 export async function checkSourceAvailability(
-  sourceId: string
+  sourceId: string,
 ): Promise<boolean> {
   const source = streamingSources.find((s) => s.id === sourceId);
   if (!source) return false;

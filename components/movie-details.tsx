@@ -92,7 +92,7 @@ export default function MovieDetails({
       setError(
         error instanceof Error
           ? error.message
-          : "Unable to load movie details. The movie may not exist or there may be a temporary issue with our data sources."
+          : "Unable to load movie details. The movie may not exist or there may be a temporary issue with our data sources.",
       );
     } finally {
       setIsLoading(false);
@@ -162,21 +162,21 @@ export default function MovieDetails({
   const posterUrl = movie.poster_path?.startsWith("http")
     ? movie.poster_path
     : movie.poster_path
-    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : placeholderImage;
+      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+      : placeholderImage;
 
   const backdropUrl = movie.backdrop_path?.startsWith("http")
     ? movie.backdrop_path
     : movie.backdrop_path
-    ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
-    : placeholderImage;
+      ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+      : placeholderImage;
 
   const director = credits?.crew?.find(
-    (person: any) => person.job === "Director"
+    (person: any) => person.job === "Director",
   );
   const mainCast = credits?.cast?.slice(0, 6) || [];
   const trailer = videos?.results?.find(
-    (video: any) => video.type === "Trailer" && video.site === "YouTube"
+    (video: any) => video.type === "Trailer" && video.site === "YouTube",
   );
 
   const formatRuntime = (minutes: number) => {
@@ -186,7 +186,7 @@ export default function MovieDetails({
     return `${hours}h ${mins}m`;
   };
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -226,19 +226,19 @@ export default function MovieDetails({
                       movie.source === "tmdb"
                         ? "bg-blue-600"
                         : movie.source === "rapidapi"
-                        ? "bg-green-600"
-                        : movie.source === "fallback"
-                        ? "bg-gray-600"
-                        : "bg-purple-600"
+                          ? "bg-green-600"
+                          : movie.source === "fallback"
+                            ? "bg-gray-600"
+                            : "bg-purple-600"
                     }`}
                   >
                     {movie.source === "tmdb"
                       ? "TMDB"
                       : movie.source === "rapidapi"
-                      ? "RapidAPI"
-                      : movie.source === "fallback"
-                      ? "Limited Info"
-                      : movie.source?.toUpperCase() || "UNKNOWN"}
+                        ? "RapidAPI"
+                        : movie.source === "fallback"
+                          ? "Limited Info"
+                          : movie.source?.toUpperCase() || "UNKNOWN"}
                   </Badge>
                 </div>
 
@@ -258,7 +258,7 @@ export default function MovieDetails({
                   {movie.vote_average > 0 && (
                     <div className="flex items-center gap-2">
                       <Star className="h-4 w-4 lg:h-5 lg:w-5 fill-yellow-400 text-yellow-400" />
-                      <span>{movie.vote_average.toFixed(1)}</span>
+                      <span>{(movie.vote_average || 0).toFixed(1)}</span>
                     </div>
                   )}
                 </div>
@@ -338,7 +338,7 @@ export default function MovieDetails({
       {/* Content Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 lg:py-12">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 bg-gray-800">
+          <TabsList className="flex overflow-x-auto lg:grid w-full lg:grid-cols-6 bg-gray-800 scrollbar-none rounded-none sm:rounded-md">
             <TabsTrigger
               value="overview"
               className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
@@ -359,19 +359,19 @@ export default function MovieDetails({
             </TabsTrigger>
             <TabsTrigger
               value="reviews"
-              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm hidden lg:block"
+              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
             >
               Reviews
             </TabsTrigger>
             <TabsTrigger
               value="discussion"
-              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm hidden lg:block"
+              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
             >
               Discussion
             </TabsTrigger>
             <TabsTrigger
               value="recommendations"
-              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm hidden lg:block"
+              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
             >
               Similar
             </TabsTrigger>
@@ -452,7 +452,7 @@ export default function MovieDetails({
                       {movie.vote_average > 0 && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">Rating:</span>
-                          <span>{movie.vote_average.toFixed(1)}/10</span>
+                          <span>{(movie.vote_average || 0).toFixed(1)}/10</span>
                         </div>
                       )}
                       {/* {movie.imdb_id && (
@@ -462,10 +462,10 @@ export default function MovieDetails({
                         </div>
                       )} */}
                       {/* <div className="flex justify-between">
-                        <span className="text-gray-400">Data Source:</span>
-                        <span className="capitalize">
-                          {movie.source || "Unknown"}
-                        </span>
+                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                <span className="text-white font-medium">
+                  {(movie.vote_average || 0).toFixed(1)}
+                </span>
                       </div> */}
                       {director && (
                         <div className="flex justify-between">
@@ -561,15 +561,19 @@ export default function MovieDetails({
           </TabsContent>
 
           <TabsContent value="reviews" className="mt-6 lg:mt-8">
-            <UserReviews movieId={movie.id} movieTitle={movie.title} />
+            <UserReviews
+              mediaId={movie.id.toString()}
+              mediaType="movie"
+              mediaTitle={movie.title}
+            />
           </TabsContent>
 
           <TabsContent value="discussion" className="mt-6 lg:mt-8">
-            <SocialFeed 
-               mediaId={movie.id} 
-               mediaType="movie" 
-               mediaTitle={movie.title}
-               mediaPoster={movie.poster_path}
+            <SocialFeed
+              mediaId={movie.id}
+              mediaType="movie"
+              mediaTitle={movie.title}
+              mediaPoster={movie.poster_path}
             />
           </TabsContent>
 

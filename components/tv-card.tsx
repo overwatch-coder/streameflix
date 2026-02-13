@@ -67,7 +67,7 @@ export default function TVCard({ show }: TVCardProps) {
   return (
     <>
       <div className="relative group cursor-pointer transition-transform duration-300 hover:scale-105">
-        <Card className="w-full sm:w-60 bg-gray-900 border-gray-700 overflow-hidden shadow-lg flex flex-col h-full p-0">
+        <Card className="w-full bg-gray-900 border-gray-700 overflow-hidden shadow-lg flex flex-col h-full p-0">
           <CardContent className="p-0 flex-grow">
             {/* Image Area  */}
             <div

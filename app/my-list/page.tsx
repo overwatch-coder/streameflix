@@ -41,15 +41,15 @@ export default function MyListPage() {
   }
 
   const filteredFavorites = favorites.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const filteredWatchlist = watchlist.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const filteredContinueWatching = continueWatching.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const sortItems = (items: any[]) => {
@@ -62,15 +62,15 @@ export default function MyListPage() {
         });
       case "rating":
         return [...items].sort(
-          (a, b) => (b.vote_average || 0) - (a.vote_average || 0)
+          (a, b) => (b.vote_average || 0) - (a.vote_average || 0),
         );
       case "year":
         return [...items].sort((a, b) => {
           const yearA = new Date(
-            a.release_date || a.first_air_date || ""
+            a.release_date || a.first_air_date || "",
           ).getFullYear();
           const yearB = new Date(
-            b.release_date || b.first_air_date || ""
+            b.release_date || b.first_air_date || "",
           ).getFullYear();
           return yearB - yearA;
         });
@@ -94,11 +94,11 @@ export default function MyListPage() {
   };
 
   if (isLoading) {
-     return (
-        <div className="min-h-screen bg-black pt-20 flex items-center justify-center">
-           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
-        </div>
-     )
+    return (
+      <div className="min-h-screen bg-black pt-20 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+      </div>
+    );
   }
 
   return (
@@ -228,6 +228,13 @@ export default function MyListPage() {
                         <div className="flex flex-col gap-2">
                           <Button
                             size="sm"
+                            onClick={() => {
+                              const path =
+                                item.type === "movie"
+                                  ? `/movie/${item.id}/watch`
+                                  : `/tv/${item.id}/watch?season=${item.seasonNumber || 1}&episode=${item.episodeNumber || 1}`;
+                              window.location.href = path;
+                            }}
                             className="bg-red-600 hover:bg-red-700"
                           >
                             <Play className="h-4 w-4 mr-1 fill-current" />
@@ -272,9 +279,9 @@ export default function MyListPage() {
               </CardHeader>
               <CardContent>
                 {filteredFavorites.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
                     {sortItems(filteredFavorites).map((item) => (
-                      <div key={item.id} className="relative group">
+                      <div key={item.id} className="relative group p-2">
                         {item?.type === "movie" ? (
                           <MovieCard movie={item} />
                         ) : (
@@ -283,7 +290,7 @@ export default function MyListPage() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 h-8 w-8 p-0"
+                          className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 h-8 w-8 p-0"
                           onClick={() =>
                             handleRemoveFromList(item.id, "favorites")
                           }
@@ -313,9 +320,9 @@ export default function MyListPage() {
               </CardHeader>
               <CardContent>
                 {filteredWatchlist.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
                     {sortItems(filteredWatchlist).map((item) => (
-                      <div key={item.id} className="relative group">
+                      <div key={item.id} className="relative group p-2">
                         {item?.type === "movie" ? (
                           <MovieCard movie={item} />
                         ) : (
@@ -324,7 +331,7 @@ export default function MyListPage() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 h-8 w-8 p-0"
+                          className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 h-8 w-8 p-0"
                           onClick={() =>
                             handleRemoveFromList(item.id, "watchlist")
                           }

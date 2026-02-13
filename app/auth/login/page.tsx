@@ -1,27 +1,29 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
-import LoginForm from "@/components/login-form"
-import { Card } from "@/components/ui/card"
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
+import LoginForm from "@/components/login-form";
+import { Card } from "@/components/ui/card";
 
 export default function LoginPage() {
-  const { user } = useAuth()
-  const router = useRouter()
+  const { user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
-      router.push("/")
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirect = searchParams.get("redirect") || "/";
+      router.push(redirect);
     }
-  }, [user, router])
+  }, [user, router]);
 
   if (user) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white">Redirecting...</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -34,5 +36,5 @@ export default function LoginPage() {
         <LoginForm />
       </Card>
     </div>
-  )
+  );
 }

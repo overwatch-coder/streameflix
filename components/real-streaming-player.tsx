@@ -20,7 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { useSettings } from "@/contexts/settings-context";
 import {
   getStreamingUrls,
   streamingSources,
@@ -35,11 +43,16 @@ import { placeholderImage } from "./movie-card";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useAuth } from "@/contexts/auth-context";
 import { ShareModal } from "@/components/share-modal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SocialFeed from "./social-feed";
+import UserReviews from "./user-reviews";
+import { cn } from "@/lib/utils";
 
 interface MovieDetails {
   id: string;
   title: string;
   overview: string;
+  poster_path?: string;
   runtime?: number;
   genres?: { id: number; name: string }[];
   release_date?: string;
@@ -80,11 +93,24 @@ export default function RealStreamingPlayer({
   const episodeListRef = useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
-  const { addToWatchlist, removeFromWatchlist, isInWatchlist, updateWatchProgress } = useFavorites();
+  const {
+    addToWatchlist,
+    removeFromWatchlist,
+    isInWatchlist,
+    updateWatchProgress,
+  } = useFavorites();
   const [inWatchlist, setInWatchlist] = useState(false);
 
+  const { settings } = useSettings();
   const [streamingUrls, setStreamingUrls] = useState<string[]>([]);
-  const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
+  const [currentSourceIndex, setCurrentSourceIndex] = useState(() => {
+    if (typeof window !== "undefined" && settings?.preferences?.functional) {
+      const saved = localStorage.getItem("preferred-server-index");
+      return saved ? parseInt(saved) : 0;
+    }
+    return 0;
+  });
+  const [isServerModalOpen, setIsServerModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -92,6 +118,16 @@ export default function RealStreamingPlayer({
   const contentType = movieId ? "movie" : "tv";
   const contentId = movieId || showId || "";
   const isTVShow = contentType === "tv";
+
+  // Persist source index if functional cookies allowed
+  useEffect(() => {
+    if (settings.preferences.functional) {
+      localStorage.setItem(
+        "preferred-server-index",
+        currentSourceIndex.toString(),
+      );
+    }
+  }, [currentSourceIndex, settings.preferences.functional]);
 
   // Check watchlist status
   useEffect(() => {
@@ -105,33 +141,37 @@ export default function RealStreamingPlayer({
 
   useEffect(() => {
     if (!open || !contentId || !user) return;
-    
+
     startTimeRef.current = Date.now();
 
     // Save initial progress record (0%) when video starts
     const saveProgress = () => {
-       const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
-       const durationMinutes = (isTVShow && show?.episode_run_time?.[0]) || movie?.runtime || 0;
-       const durationSeconds = durationMinutes * 60;
-       
-       // Cap progress at 95% so it doesn't auto-complete if they leave it open
-       // If duration is 0 (unknown), we can't calculate percentage
-       const percentage = durationSeconds > 0 
-          ? Math.min(95, Math.floor((elapsedSeconds / durationSeconds) * 100)) 
+      const elapsedSeconds = Math.floor(
+        (Date.now() - startTimeRef.current) / 1000,
+      );
+      const durationMinutes =
+        (isTVShow && show?.episode_run_time?.[0]) || movie?.runtime || 0;
+      const durationSeconds = durationMinutes * 60;
+
+      // Cap progress at 95% so it doesn't auto-complete if they leave it open
+      // If duration is 0 (unknown), we can't calculate percentage
+      const percentage =
+        durationSeconds > 0
+          ? Math.min(95, Math.floor((elapsedSeconds / durationSeconds) * 100))
           : 0;
 
-       updateWatchProgress({
-          id: contentId,
-          title: displayTitle,
-          type: contentType,
-          poster_path: poster || null,
-          progress: percentage,
-          currentTime: elapsedSeconds,
-          duration: durationSeconds,
-          lastWatched: new Date().toISOString(),
-          seasonNumber: season,
-          episodeNumber: episode
-       });
+      updateWatchProgress({
+        id: contentId,
+        title: displayTitle,
+        type: contentType,
+        poster_path: poster || null,
+        progress: percentage,
+        currentTime: elapsedSeconds,
+        duration: durationSeconds,
+        lastWatched: new Date().toISOString(),
+        seasonNumber: season,
+        episodeNumber: episode,
+      });
     };
 
     // Save immediately
@@ -139,7 +179,7 @@ export default function RealStreamingPlayer({
 
     // Update timestamp every minute to keep "last watched" fresh
     const interval = setInterval(() => {
-       saveProgress(); 
+      saveProgress();
     }, 60000);
 
     return () => {
@@ -177,7 +217,7 @@ export default function RealStreamingPlayer({
         season,
         episode,
         imdbId,
-        "individual"
+        "individual",
       );
       if (urls.length) {
         setStreamingUrls(urls);
@@ -197,7 +237,7 @@ export default function RealStreamingPlayer({
     try {
       const seasonData = await getTVSeasonDetails(
         showId.toString(),
-        season.toString()
+        season.toString(),
       );
       setEpisodes(seasonData.episodes || []);
     } catch {
@@ -226,7 +266,7 @@ export default function RealStreamingPlayer({
     } else {
       setIsLoading(false);
       setError(
-        "All streaming sources failed. Please try again later or select a different server manually."
+        "All streaming sources failed. Please try again later or select a different server manually.",
       );
     }
   };
@@ -240,22 +280,22 @@ export default function RealStreamingPlayer({
   };
 
   const toggleWatchlist = async () => {
-     const item = {
-        id: parseInt(contentId),
-        title: displayTitle,
-        poster_path: poster || "",
-        vote_average: movie?.vote_average || 0,
-        type: contentType as "movie" | "tv",
-        release_date: movie?.release_date || show?.first_air_date || ""
-     };
+    const item = {
+      id: parseInt(contentId),
+      title: displayTitle,
+      poster_path: poster || "",
+      vote_average: movie?.vote_average || 0,
+      type: contentType as "movie" | "tv",
+      release_date: movie?.release_date || show?.first_air_date || "",
+    };
 
-     if (inWatchlist) {
-        await removeFromWatchlist(parseInt(contentId));
-        setInWatchlist(false);
-     } else {
-        await addToWatchlist(item);
-        setInWatchlist(true);
-     }
+    if (inWatchlist) {
+      await removeFromWatchlist(parseInt(contentId));
+      setInWatchlist(false);
+    } else {
+      await addToWatchlist(item);
+      setInWatchlist(true);
+    }
   };
 
   const formatRuntime = (minutes: number | undefined) => {
@@ -273,7 +313,7 @@ export default function RealStreamingPlayer({
       : movie?.overview || "No overview available.";
 
   const displayRuntime = formatRuntime(
-    (isTVShow && show?.episode_run_time?.[0]) || movie?.runtime
+    (isTVShow && show?.episode_run_time?.[0]) || movie?.runtime,
   );
 
   const displayGenres =
@@ -284,10 +324,10 @@ export default function RealStreamingPlayer({
     isTVShow && show?.first_air_date
       ? new Date(show.first_air_date).getFullYear()
       : movie?.release_date
-      ? new Date(movie.release_date).getFullYear()
-      : "N/A";
-  
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+        ? new Date(movie.release_date).getFullYear()
+        : "N/A";
+
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   if (!open) return null;
 
@@ -297,54 +337,119 @@ export default function RealStreamingPlayer({
         {/* Header with Controls */}
         <div className="w-full flex justify-between items-center sticky top-0 bg-gray-950/80 backdrop-blur-md z-10 py-4 px-2 rounded-xl border border-white/5 shadow-2xl">
           <div className="flex items-center gap-3">
-            <Button onClick={onClose} variant="ghost" className="text-white hover:bg-white/10">
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              className="text-white hover:bg-white/10"
+            >
               <X className="w-5 h-5 mr-1" /> Close
             </Button>
             <div className="flex flex-col">
-               <h2 className="text-lg font-bold leading-tight line-clamp-1">{displayTitle}</h2>
-               {isTVShow && (
-                 <span className="text-xs text-red-500 font-semibold">
-                   Season {season} • Episode {episode}
-                 </span>
-               )}
+              <h2 className="text-lg font-bold leading-tight line-clamp-1">
+                {displayTitle}
+              </h2>
+              {isTVShow && (
+                <span className="text-xs text-red-500 font-semibold">
+                  Season {season} • Episode {episode}
+                </span>
+              )}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2 text-sm text-gray-400">
-               <span>Server:</span>
+              <span>Server:</span>
             </div>
             {streamingUrls.length > 1 && (
               <div className="flex items-center gap-2">
-                <Select
-                  value={currentSourceIndex.toString()}
-                  onValueChange={(v) => {
-                    setCurrentSourceIndex(parseInt(v));
-                    setIsLoading(true);
-                    setError(null);
-                  }}
+                <Dialog
+                  open={isServerModalOpen}
+                  onOpenChange={setIsServerModalOpen}
                 >
-                  <SelectTrigger className="w-[140px] sm:w-[180px] text-white bg-white/5 border-white/10 focus:ring-red-500">
-                    <SelectValue placeholder="Select Server" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-900 border-gray-700 text-white">
-                    {streamingUrls.map((url, i) => {
-                      const src = streamingSources.find((s) =>
-                        url.startsWith(s.baseUrl)
-                      );
-                      return (
-                        <SelectItem key={i} value={i.toString()}>
-                          {src?.name || `Server ${i + 1}`}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-white bg-white/5 border-white/10 hover:bg-white/10 hidden sm:flex"
+                    >
+                      <RotateCcw className="h-4 w-4 mr-2" /> Change Server
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-gray-950 border-gray-800 text-white max-w-4xl max-h-[90vh] flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold">
+                        Select Streaming Server
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4 overflow-y-auto pr-2 custom-scrollbar">
+                      {streamingUrls.map((url, i) => {
+                        const src = streamingSources.find((s) =>
+                          url.startsWith(s.baseUrl),
+                        );
+                        const isActive = currentSourceIndex === i;
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => {
+                              setCurrentSourceIndex(i);
+                              setIsServerModalOpen(false);
+                              setIsLoading(true);
+                              setError(null);
+                            }}
+                            className={cn(
+                              "flex flex-col text-left p-4 rounded-xl border transition-all hover:scale-[1.02]",
+                              isActive
+                                ? "bg-red-600/20 border-red-600 ring-1 ring-red-600"
+                                : "bg-white/5 border-white/10 hover:bg-white/10",
+                            )}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-bold text-lg">
+                                {src?.name || `Server ${i + 1}`}
+                              </span>
+                              {isActive && (
+                                <Badge className="bg-red-600 text-white">
+                                  Active
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {src?.supportsQuality && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] py-0 border-white/20"
+                                >
+                                  HD
+                                </Badge>
+                              )}
+                              {src?.supportsSubtitles && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] py-0 border-white/20"
+                                >
+                                  Subtitles
+                                </Badge>
+                              )}
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] py-0 border-white/20 uppercase"
+                              >
+                                {src?.idType}
+                              </Badge>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Mobile Server Toggle */}
                 <Button
                   onClick={switchSource}
                   variant="outline"
                   size="icon"
-                  className="text-white bg-white/5 border-white/10 hover:bg-white/10"
+                  className="text-white bg-white/5 border-white/10 hover:bg-white/10 sm:hidden"
                   title="Next Server"
                 >
                   <RotateCcw className="h-4 w-4" />
@@ -359,18 +464,20 @@ export default function RealStreamingPlayer({
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600 mb-4"></div>
-              <p className="text-gray-400 animate-pulse">Connecting to server...</p>
+              <p className="text-gray-400 animate-pulse">
+                Connecting to server...
+              </p>
             </div>
           )}
           {error && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-red-500 bg-black/90 z-20 p-6 text-center">
               <AlertCircle className="w-12 h-12 mb-4" />
               <p className="text-lg font-semibold mb-2">{error}</p>
-              <Button 
+              <Button
                 onClick={() => {
-                   setError(null);
-                   setIsLoading(true);
-                   loadStreamingSources();
+                  setError(null);
+                  setIsLoading(true);
+                  loadStreamingSources();
                 }}
                 variant="outline"
                 className="mt-4 border-red-500/50 text-red-500 hover:bg-red-500/10"
@@ -399,7 +506,7 @@ export default function RealStreamingPlayer({
             <Button
               onClick={() => {
                 const i = episodes.findIndex(
-                  (ep) => ep.episode_number === episode
+                  (ep) => ep.episode_number === episode,
                 );
                 const prev = episodes[i - 1];
                 if (prev) onEpisodeSelect?.(season, prev.episode_number);
@@ -410,15 +517,15 @@ export default function RealStreamingPlayer({
             >
               <ChevronLeft className="h-5 w-5 mr-2" /> Previous Episode
             </Button>
-            
+
             <div className="hidden sm:block text-sm text-gray-400">
-               Ep {episode} of {episodes.length}
+              Ep {episode} of {episodes.length}
             </div>
 
             <Button
               onClick={() => {
                 const i = episodes.findIndex(
-                  (ep) => ep.episode_number === episode
+                  (ep) => ep.episode_number === episode,
                 );
                 const next = episodes[i + 1];
                 if (next) onEpisodeSelect?.(season, next.episode_number);
@@ -437,7 +544,7 @@ export default function RealStreamingPlayer({
           <div className="w-full space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h3 className="text-xl font-bold">Episodes</h3>
-              
+
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <Select
                   value={season.toString()}
@@ -453,7 +560,7 @@ export default function RealStreamingPlayer({
                         <SelectItem key={i + 1} value={(i + 1).toString()}>
                           Season {i + 1}
                         </SelectItem>
-                      )
+                      ),
                     )}
                   </SelectContent>
                 </Select>
@@ -494,35 +601,35 @@ export default function RealStreamingPlayer({
                   onClick={() => onEpisodeSelect?.(season, ep.episode_number)}
                 >
                   <div className="relative aspect-video">
-                     {ep.still_path ? (
-                    <Image
-                      src={`https://image.tmdb.org/t/p/w500${ep.still_path}`}
-                      alt={ep.name || `Episode ${ep.episode_number}`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      width={256}
-                      height={144}
-                    />
-                  ) : (
-                    <Image
-                      src={poster || placeholderImage}
-                      alt={ep.name || `Episode ${ep.episode_number}`}
-                      className="w-full h-full object-cover opacity-50"
-                      width={256}
-                      height={144}
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
-                  {ep.episode_number === episode && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                       <PlayCircle className="w-10 h-10 text-red-500 fill-current" />
-                    </div>
-                  )}
+                    {ep.still_path ? (
+                      <Image
+                        src={`https://image.tmdb.org/t/p/w500${ep.still_path}`}
+                        alt={ep.name || `Episode ${ep.episode_number}`}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        width={256}
+                        height={144}
+                      />
+                    ) : (
+                      <Image
+                        src={poster || placeholderImage}
+                        alt={ep.name || `Episode ${ep.episode_number}`}
+                        className="w-full h-full object-cover opacity-50"
+                        width={256}
+                        height={144}
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+                    {ep.episode_number === episode && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <PlayCircle className="w-10 h-10 text-red-500 fill-current" />
+                      </div>
+                    )}
                   </div>
-                  
+
                   <div className="p-3 bg-gray-900/90 h-full">
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-xs font-semibold text-red-500">
-                         Episode {ep.episode_number}
+                        Episode {ep.episode_number}
                       </span>
                       <span className="text-xs text-gray-500">
                         {ep.runtime ? `${ep.runtime}m` : ""}
@@ -532,7 +639,7 @@ export default function RealStreamingPlayer({
                       {ep.name || `Episode ${ep.episode_number}`}
                     </h4>
                     <p className="text-xs text-gray-400 mt-1 line-clamp-2">
-                       {ep.overview}
+                      {ep.overview}
                     </p>
                   </div>
                 </div>
@@ -545,59 +652,115 @@ export default function RealStreamingPlayer({
         <div className="flex flex-col md:flex-row items-start gap-8 w-full bg-white/5 p-6 rounded-2xl border border-white/5">
           {poster && (
             <div className="flex-shrink-0 hidden md:block">
-               <Image
-              src={poster}
-              alt="Poster"
-              className="w-32 sm:w-48 rounded-lg shadow-2xl"
-              width={200}
-              height={300}
-            />
+              <Image
+                src={poster}
+                alt="Poster"
+                className="w-32 sm:w-48 rounded-lg shadow-2xl"
+                width={200}
+                height={300}
+              />
             </div>
           )}
           <div className="flex-1 w-full">
-             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-                <h3 className="text-3xl font-bold">{displayTitle}</h3>
-                <div className="flex gap-2">
-                   {user && (
-                      <Button 
-                         variant="outline" 
-                         onClick={toggleWatchlist}
-                         className={`${inWatchlist ? "bg-red-600 text-white border-red-600 hover:bg-red-700" : "bg-white/5 text-white hover:bg-white/10"}`}
-                      >
-                         {inWatchlist ? <Check className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-                         {inWatchlist ? "Added" : "My List"}
-                      </Button>
-                   )}
-                   <ShareModal title={displayTitle} url={shareUrl} />
-                </div>
-             </div>
-            
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+              <h3 className="text-3xl font-bold">{displayTitle}</h3>
+              <div className="flex gap-2">
+                {user && (
+                  <Button
+                    variant="outline"
+                    onClick={toggleWatchlist}
+                    className={`${inWatchlist ? "bg-red-600 text-white border-red-600 hover:bg-red-700" : "bg-white/5 text-white hover:bg-white/10"}`}
+                  >
+                    {inWatchlist ? (
+                      <Check className="w-4 h-4 mr-2" />
+                    ) : (
+                      <Plus className="w-4 h-4 mr-2" />
+                    )}
+                    {inWatchlist ? "Added" : "My List"}
+                  </Button>
+                )}
+                <ShareModal title={displayTitle} url={shareUrl} />
+              </div>
+            </div>
+
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300 mb-6">
-              <Badge variant="outline" className="border-white/20 text-white">{displayFirstAirYear}</Badge>
+              <Badge variant="outline" className="border-white/20 text-white">
+                {displayFirstAirYear}
+              </Badge>
               <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
               <span>{displayGenres}</span>
               <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
               <span>{displayRuntime}</span>
               {movie?.vote_average && (
-                 <>
-                    <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-                    <span className="flex items-center text-yellow-500">
-                       <Star className="w-4 h-4 mr-1 fill-current" /> {movie.vote_average.toFixed(1)}
+                <>
+                  <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
+                  <div className="flex items-center text-yellow-400 bg-white/5 px-2 py-1 rounded-md border border-white/10">
+                    <Star className="h-4 w-4 fill-current mr-1" />
+                    <span className="text-sm font-medium">
+                      {(movie?.vote_average || show?.vote_average || 0).toFixed(
+                        1,
+                      )}
                     </span>
-                 </>
+                  </div>
+                </>
               )}
             </div>
-            <p className="text-gray-300 leading-relaxed max-w-3xl">{displayOverview}</p>
+            <p className="text-gray-300 leading-relaxed max-w-3xl">
+              {displayOverview}
+            </p>
           </div>
         </div>
 
-        {/* Recommendations */}
+        {/* Content Tabs */}
         <div className="w-full pt-8 border-t border-white/10">
-          <h3 className="text-2xl font-bold mb-6">You May Also Like</h3>
-          {movieId && movie?.id && (
-            <MovieRecommendations currentMovieId={parseInt(movie.id)} />
-          )}
-          {isTVShow && showId && <TVRecommendations currentTvId={showId} />}
+          <Tabs defaultValue="recommendations" className="w-full">
+            <TabsList className="bg-white/5 border border-white/10 mb-6 overflow-x-auto flex lg:grid lg:grid-cols-3 scrollbar-none">
+              <TabsTrigger
+                value="recommendations"
+                className="text-white data-[state=active]:bg-red-600"
+              >
+                Recommendations
+              </TabsTrigger>
+              <TabsTrigger
+                value="reviews"
+                className="text-white data-[state=active]:bg-red-600"
+              >
+                Reviews
+              </TabsTrigger>
+              <TabsTrigger
+                value="discussion"
+                className="text-white data-[state=active]:bg-red-600"
+              >
+                Discussion
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="recommendations" className="mt-0">
+              {movieId && movie?.id && (
+                <MovieRecommendations currentMovieId={parseInt(movie.id)} />
+              )}
+              {isTVShow && showId && <TVRecommendations currentTvId={showId} />}
+            </TabsContent>
+
+            <TabsContent value="reviews" className="mt-0">
+              <UserReviews
+                mediaId={movieId || showId || ""}
+                mediaType={isTVShow ? "tv" : "movie"}
+                mediaTitle={displayTitle}
+                seasonNumber={isTVShow ? season : undefined}
+                episodeNumber={isTVShow ? episode : undefined}
+              />
+            </TabsContent>
+
+            <TabsContent value="discussion" className="mt-0">
+              <SocialFeed
+                mediaId={movieId || showId || ""}
+                mediaType={isTVShow ? "tv" : "movie"}
+                mediaTitle={displayTitle}
+                mediaPoster={movie?.poster_path || show?.poster_path || ""}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

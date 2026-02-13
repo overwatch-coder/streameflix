@@ -1,99 +1,109 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Star, Calendar, MapPin, Users, Award, TrendingUp } from "lucide-react"
-import { placeholderImage } from "./movie-card"
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Star, Calendar, MapPin, Users, Award, TrendingUp } from "lucide-react";
+import { placeholderImage } from "./movie-card";
 
 interface PersonDetailsProps {
   person: {
-    id: number
-    name: string
-    biography: string
-    birthday: string
-    deathday?: string
-    place_of_birth: string
-    profile_path: string
-    known_for_department: string
-    popularity: number
+    id: number;
+    name: string;
+    biography: string;
+    birthday: string;
+    deathday?: string;
+    place_of_birth: string;
+    profile_path: string;
+    known_for_department: string;
+    popularity: number;
     movie_credits: {
-      cast: any[]
-      crew: any[]
-    }
+      cast: any[];
+      crew: any[];
+    };
     tv_credits: {
-      cast: any[]
-      crew: any[]
-    }
+      cast: any[];
+      crew: any[];
+    };
     combined_credits: {
-      cast: any[]
-      crew: any[]
-    }
-  }
+      cast: any[];
+      crew: any[];
+    };
+  };
 }
 
 export default function PersonDetails({ person }: PersonDetailsProps) {
-  const [activeTab, setActiveTab] = useState("overview")
+  const [activeTab, setActiveTab] = useState("overview");
 
   const calculateAge = (birthday: string, deathday?: string) => {
-    const birth = new Date(birthday)
-    const end = deathday ? new Date(deathday) : new Date()
-    return Math.floor((end.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
-  }
+    const birth = new Date(birthday);
+    const end = deathday ? new Date(deathday) : new Date();
+    return Math.floor(
+      (end.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+    );
+  };
 
   const getTopRatedMovies = () => {
     return person.movie_credits.cast
       .filter((movie: any) => movie.vote_average > 0)
       .sort((a: any, b: any) => b.vote_average - a.vote_average)
-      .slice(0, 10)
-  }
+      .slice(0, 10);
+  };
 
   const getTopRatedTVShows = () => {
     return person.tv_credits.cast
       .filter((show: any) => show.vote_average > 0)
       .sort((a: any, b: any) => b.vote_average - a.vote_average)
-      .slice(0, 10)
-  }
+      .slice(0, 10);
+  };
 
   const getRecentWork = () => {
     const allWork = [
-      ...person.movie_credits.cast.map((item: any) => ({ ...item, media_type: "movie" })),
-      ...person.tv_credits.cast.map((item: any) => ({ ...item, media_type: "tv" })),
-    ]
+      ...person.movie_credits.cast.map((item: any) => ({
+        ...item,
+        media_type: "movie",
+      })),
+      ...person.tv_credits.cast.map((item: any) => ({
+        ...item,
+        media_type: "tv",
+      })),
+    ];
 
     return allWork
       .filter((item: any) => item.release_date || item.first_air_date)
       .sort((a: any, b: any) => {
-        const dateA = new Date(a.release_date || a.first_air_date)
-        const dateB = new Date(b.release_date || b.first_air_date)
-        return dateB.getTime() - dateA.getTime()
+        const dateA = new Date(a.release_date || a.first_air_date);
+        const dateB = new Date(b.release_date || b.first_air_date);
+        return dateB.getTime() - dateA.getTime();
       })
-      .slice(0, 12)
-  }
+      .slice(0, 12);
+  };
 
   const getCareerStats = () => {
-    const movieCount = person.movie_credits.cast.length
-    const tvCount = person.tv_credits.cast.length
-    const totalCredits = movieCount + tvCount
+    const movieCount = person.movie_credits.cast.length;
+    const tvCount = person.tv_credits.cast.length;
+    const totalCredits = movieCount + tvCount;
 
     const averageRating =
       person.combined_credits.cast
         .filter((item: any) => item.vote_average > 0)
         .reduce((sum: number, item: any) => sum + item.vote_average, 0) /
-        person.combined_credits.cast.filter((item: any) => item.vote_average > 0).length || 0
+        person.combined_credits.cast.filter(
+          (item: any) => item.vote_average > 0,
+        ).length || 0;
 
     return {
       totalCredits,
       movieCount,
       tvCount,
-      averageRating: averageRating.toFixed(1),
-    }
-  }
+      averageRating: (averageRating || 0).toFixed(1),
+    };
+  };
 
-  const stats = getCareerStats()
+  const stats = getCareerStats();
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -126,22 +136,30 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
 
                 <div className="space-y-3">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-400">Known For</h4>
+                    <h4 className="text-sm font-medium text-gray-400">
+                      Known For
+                    </h4>
                     <p className="text-white">{person.known_for_department}</p>
                   </div>
 
                   {person.birthday && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-400">Born</h4>
+                      <h4 className="text-sm font-medium text-gray-400">
+                        Born
+                      </h4>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <span className="text-white">
-                          {new Date(person.birthday).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                          {!person.deathday && ` (age ${calculateAge(person.birthday)})`}
+                          {new Date(person.birthday).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            },
+                          )}
+                          {!person.deathday &&
+                            ` (age ${calculateAge(person.birthday)})`}
                         </span>
                       </div>
                     </div>
@@ -149,15 +167,20 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
 
                   {person.deathday && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-400">Died</h4>
+                      <h4 className="text-sm font-medium text-gray-400">
+                        Died
+                      </h4>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <span className="text-white">
-                          {new Date(person.deathday).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
+                          {new Date(person.deathday).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            },
+                          )}
                           {` (age ${calculateAge(person.birthday, person.deathday)})`}
                         </span>
                       </div>
@@ -166,19 +189,27 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
 
                   {person.place_of_birth && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-400">Place of Birth</h4>
+                      <h4 className="text-sm font-medium text-gray-400">
+                        Place of Birth
+                      </h4>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-gray-400" />
-                        <span className="text-white">{person.place_of_birth}</span>
+                        <span className="text-white">
+                          {person.place_of_birth}
+                        </span>
                       </div>
                     </div>
                   )}
 
                   <div>
-                    <h4 className="text-sm font-medium text-gray-400">Popularity</h4>
+                    <h4 className="text-sm font-medium text-gray-400">
+                      Popularity
+                    </h4>
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-gray-400" />
-                      <span className="text-white">{person.popularity.toFixed(1)}</span>
+                      <span className="text-white">
+                        {(person.popularity || 0).toFixed(1)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -199,7 +230,9 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
                     <div className="flex items-center justify-center mb-2">
                       <Users className="w-5 h-5 text-blue-400" />
                     </div>
-                    <div className="text-2xl font-bold text-white">{stats.totalCredits}</div>
+                    <div className="text-2xl font-bold text-white">
+                      {stats.totalCredits}
+                    </div>
                     <div className="text-sm text-gray-400">Total Credits</div>
                   </CardContent>
                 </Card>
@@ -209,7 +242,9 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
                     <div className="flex items-center justify-center mb-2">
                       <Award className="w-5 h-5 text-yellow-400" />
                     </div>
-                    <div className="text-2xl font-bold text-white">{stats.movieCount}</div>
+                    <div className="text-2xl font-bold text-white">
+                      {stats.movieCount}
+                    </div>
                     <div className="text-sm text-gray-400">Movies</div>
                   </CardContent>
                 </Card>
@@ -219,7 +254,9 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
                     <div className="flex items-center justify-center mb-2">
                       <Star className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="text-2xl font-bold text-white">{stats.tvCount}</div>
+                    <div className="text-2xl font-bold text-white">
+                      {stats.tvCount}
+                    </div>
                     <div className="text-sm text-gray-400">TV Shows</div>
                   </CardContent>
                 </Card>
@@ -229,7 +266,9 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
                     <div className="flex items-center justify-center mb-2">
                       <Star className="w-5 h-5 text-red-400 fill-current" />
                     </div>
-                    <div className="text-2xl font-bold text-white">{stats.averageRating}</div>
+                    <div className="text-2xl font-bold text-white">
+                      {stats.averageRating}
+                    </div>
                     <div className="text-sm text-gray-400">Avg Rating</div>
                   </CardContent>
                 </Card>
@@ -241,7 +280,9 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
               <Card className="bg-gray-900 border-gray-700">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-semibold mb-4">Biography</h3>
-                  <div className="text-gray-300 leading-relaxed whitespace-pre-line">{person.biography}</div>
+                  <div className="text-gray-300 leading-relaxed whitespace-pre-line">
+                    {person.biography}
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -251,10 +292,16 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
         {/* Filmography Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-gray-900 mb-6">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-red-600">
+            <TabsTrigger
+              value="overview"
+              className="data-[state=active]:bg-red-600"
+            >
               Recent Work
             </TabsTrigger>
-            <TabsTrigger value="movies" className="data-[state=active]:bg-red-600">
+            <TabsTrigger
+              value="movies"
+              className="data-[state=active]:bg-red-600"
+            >
               Top Movies
             </TabsTrigger>
             <TabsTrigger value="tv" className="data-[state=active]:bg-red-600">
@@ -270,7 +317,11 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
               {getRecentWork().map((item: any, idx: number) => (
                 <Link
                   key={`${item.media_type}-${item.id}-${idx}`}
-                  href={item.media_type === "movie" ? `/movie/${item.id}` : `/tv/${item.id}`}
+                  href={
+                    item.media_type === "movie"
+                      ? `/movie/${item.id}`
+                      : `/tv/${item.id}`
+                  }
                 >
                   <Card className="bg-gray-900 border-gray-700 hover:bg-gray-800 transition-colors">
                     <CardContent className="p-0">
@@ -285,25 +336,36 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
                           fill
                           className="object-cover rounded-t-lg"
                         />
-                        <Badge variant="secondary" className="absolute top-2 left-2 bg-red-600 text-white text-xs">
+                        <Badge
+                          variant="secondary"
+                          className="absolute top-2 left-2 bg-red-600 text-white text-xs"
+                        >
                           {item.media_type === "movie" ? "Movie" : "TV"}
                         </Badge>
                         {item.vote_average > 0 && (
-                          <div className="absolute top-2 right-2 bg-black/80 rounded-full px-2 py-1 flex items-center gap-1">
-                            <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                            <span className="text-xs text-white">{item.vote_average.toFixed(1)}</span>
+                          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded flex items-center gap-1">
+                            <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                            <span className="text-[10px] text-white font-medium">
+                              {(item.vote_average || 0).toFixed(1)}
+                            </span>
                           </div>
                         )}
                       </div>
                       <div className="p-3">
-                        <h4 className="text-white font-medium text-sm line-clamp-2 mb-1">{item.title || item.name}</h4>
+                        <h4 className="text-white font-medium text-sm line-clamp-2 mb-1">
+                          {item.title || item.name}
+                        </h4>
                         <p className="text-gray-400 text-xs">
                           {item.release_date || item.first_air_date
-                            ? new Date(item.release_date || item.first_air_date).getFullYear()
+                            ? new Date(
+                                item.release_date || item.first_air_date,
+                              ).getFullYear()
                             : "TBA"}
                         </p>
                         {item.character && (
-                          <p className="text-gray-500 text-xs mt-1 line-clamp-1">as {item.character}</p>
+                          <p className="text-gray-500 text-xs mt-1 line-clamp-1">
+                            as {item.character}
+                          </p>
                         )}
                       </div>
                     </CardContent>
@@ -332,16 +394,24 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
                         />
                         <div className="absolute top-2 right-2 bg-black/80 rounded-full px-2 py-1 flex items-center gap-1">
                           <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                          <span className="text-xs text-white">{movie.vote_average.toFixed(1)}</span>
+                          <span className="text-xs text-white">
+                            {(movie.vote_average || 0).toFixed(1)}
+                          </span>
                         </div>
                       </div>
                       <div className="p-3">
-                        <h4 className="text-white font-medium text-sm line-clamp-2 mb-1">{movie.title}</h4>
+                        <h4 className="text-white font-medium text-sm line-clamp-2 mb-1">
+                          {movie.title}
+                        </h4>
                         <p className="text-gray-400 text-xs">
-                          {movie.release_date ? new Date(movie.release_date).getFullYear() : "TBA"}
+                          {movie.release_date
+                            ? new Date(movie.release_date).getFullYear()
+                            : "TBA"}
                         </p>
                         {movie.character && (
-                          <p className="text-gray-500 text-xs mt-1 line-clamp-1">as {movie.character}</p>
+                          <p className="text-gray-500 text-xs mt-1 line-clamp-1">
+                            as {movie.character}
+                          </p>
                         )}
                       </div>
                     </CardContent>
@@ -370,16 +440,24 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
                         />
                         <div className="absolute top-2 right-2 bg-black/80 rounded-full px-2 py-1 flex items-center gap-1">
                           <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                          <span className="text-xs text-white">{show.vote_average.toFixed(1)}</span>
+                          <span className="text-xs text-white">
+                            {(show.vote_average || 0).toFixed(1)}
+                          </span>
                         </div>
                       </div>
                       <div className="p-3">
-                        <h4 className="text-white font-medium text-sm line-clamp-2 mb-1">{show.name}</h4>
+                        <h4 className="text-white font-medium text-sm line-clamp-2 mb-1">
+                          {show.name}
+                        </h4>
                         <p className="text-gray-400 text-xs">
-                          {show.first_air_date ? new Date(show.first_air_date).getFullYear() : "TBA"}
+                          {show.first_air_date
+                            ? new Date(show.first_air_date).getFullYear()
+                            : "TBA"}
                         </p>
                         {show.character && (
-                          <p className="text-gray-500 text-xs mt-1 line-clamp-1">as {show.character}</p>
+                          <p className="text-gray-500 text-xs mt-1 line-clamp-1">
+                            as {show.character}
+                          </p>
                         )}
                       </div>
                     </CardContent>
@@ -393,16 +471,25 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
             <div className="space-y-6">
               {/* Movies Section */}
               <div>
-                <h3 className="text-xl font-semibold text-white mb-4">Movies ({person.movie_credits.cast.length})</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">
+                  Movies ({person.movie_credits.cast.length})
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {person.movie_credits.cast
                     .sort((a: any, b: any) => {
-                      const yearA = a.release_date ? new Date(a.release_date).getFullYear() : 0
-                      const yearB = b.release_date ? new Date(b.release_date).getFullYear() : 0
-                      return yearB - yearA
+                      const yearA = a.release_date
+                        ? new Date(a.release_date).getFullYear()
+                        : 0;
+                      const yearB = b.release_date
+                        ? new Date(b.release_date).getFullYear()
+                        : 0;
+                      return yearB - yearA;
                     })
                     .map((movie: any, idx) => (
-                      <Link key={`${movie.id}-${idx}`} href={`/movie/${movie.id}`}>
+                      <Link
+                        key={`${movie.id}-${idx}`}
+                        href={`/movie/${movie.id}`}
+                      >
                         <Card className="bg-gray-900 border-gray-700 hover:bg-gray-800 transition-colors">
                           <CardContent className="p-4">
                             <div className="flex gap-4">
@@ -420,15 +507,25 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-white font-medium mb-1">{movie.title}</h4>
+                                <h4 className="text-white font-medium mb-1">
+                                  {movie.title}
+                                </h4>
                                 <p className="text-gray-400 text-sm mb-1">
-                                  {movie.release_date ? new Date(movie.release_date).getFullYear() : "TBA"}
+                                  {movie.release_date
+                                    ? new Date(movie.release_date).getFullYear()
+                                    : "TBA"}
                                 </p>
-                                {movie.character && <p className="text-gray-500 text-sm mb-2">as {movie.character}</p>}
+                                {movie.character && (
+                                  <p className="text-gray-500 text-sm mb-2">
+                                    as {movie.character}
+                                  </p>
+                                )}
                                 {movie.vote_average > 0 && (
                                   <div className="flex items-center gap-1">
                                     <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                                    <span className="text-xs text-gray-400">{movie.vote_average.toFixed(1)}</span>
+                                    <span className="text-xs text-gray-400">
+                                      {(movie.vote_average || 0).toFixed(1)}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -442,13 +539,19 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
 
               {/* TV Shows Section */}
               <div>
-                <h3 className="text-xl font-semibold text-white mb-4">TV Shows ({person.tv_credits.cast.length})</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">
+                  TV Shows ({person.tv_credits.cast.length})
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {person.tv_credits.cast
                     .sort((a: any, b: any) => {
-                      const yearA = a.first_air_date ? new Date(a.first_air_date).getFullYear() : 0
-                      const yearB = b.first_air_date ? new Date(b.first_air_date).getFullYear() : 0
-                      return yearB - yearA
+                      const yearA = a.first_air_date
+                        ? new Date(a.first_air_date).getFullYear()
+                        : 0;
+                      const yearB = b.first_air_date
+                        ? new Date(b.first_air_date).getFullYear()
+                        : 0;
+                      return yearB - yearA;
                     })
                     .map((show: any, idx) => (
                       <Link key={`${show.id}-${idx}`} href={`/tv/${show.id}`}>
@@ -469,15 +572,27 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-white font-medium mb-1">{show.name}</h4>
+                                <h4 className="text-white font-medium mb-1">
+                                  {show.name}
+                                </h4>
                                 <p className="text-gray-400 text-sm mb-1">
-                                  {show.first_air_date ? new Date(show.first_air_date).getFullYear() : "TBA"}
+                                  {show.first_air_date
+                                    ? new Date(
+                                        show.first_air_date,
+                                      ).getFullYear()
+                                    : "TBA"}
                                 </p>
-                                {show.character && <p className="text-gray-500 text-sm mb-2">as {show.character}</p>}
+                                {show.character && (
+                                  <p className="text-gray-500 text-sm mb-2">
+                                    as {show.character}
+                                  </p>
+                                )}
                                 {show.vote_average > 0 && (
                                   <div className="flex items-center gap-1">
                                     <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                                    <span className="text-xs text-gray-400">{show.vote_average.toFixed(1)}</span>
+                                    <span className="text-xs text-gray-400">
+                                      {(show.vote_average || 0).toFixed(1)}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -493,5 +608,5 @@ export default function PersonDetails({ person }: PersonDetailsProps) {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

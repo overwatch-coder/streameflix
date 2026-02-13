@@ -49,7 +49,7 @@ export default function SeasonsEpisodes({
       try {
         const seasonData = await getTVSeasonDetails(
           showId.toString(),
-          selectedSeason.toString()
+          selectedSeason.toString(),
         );
         setEpisodes(seasonData.episodes || []);
       } catch (error) {
@@ -59,7 +59,7 @@ export default function SeasonsEpisodes({
         setIsLoading(false);
       }
     },
-    [showId]
+    [showId],
   );
 
   useEffect(() => {
@@ -162,7 +162,7 @@ export default function SeasonsEpisodes({
                               <Calendar className="h-3 w-3" />
                               <span>
                                 {new Date(
-                                  episode.air_date
+                                  episode.air_date,
                                 ).toLocaleDateString()}
                               </span>
                             </div>
@@ -175,7 +175,9 @@ export default function SeasonsEpisodes({
                           )}
                           {episode.vote_average > 0 && (
                             <div className="flex items-center gap-1">
-                              <span>⭐ {episode.vote_average.toFixed(1)}</span>
+                              <span>
+                                ⭐ {(episode.vote_average || 0).toFixed(1)}
+                              </span>
                             </div>
                           )}
                         </div>

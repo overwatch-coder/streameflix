@@ -29,6 +29,7 @@ import Link from "next/link";
 import { placeholderImage } from "./movie-card";
 import { useRouter } from "next/navigation";
 import SocialFeed from "./social-feed";
+import UserReviews from "./user-reviews";
 
 interface TVDetailsProps {
   show: TVDetailsType;
@@ -44,7 +45,7 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
   const router = useRouter();
 
   const isFavorite = favorites.some(
-    (fav) => fav.id === show.id && fav.type === "tv"
+    (fav) => fav.id === show.id && fav.type === "tv",
   );
 
   const backdropUrl = show.backdrop_path
@@ -58,13 +59,13 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
   const creator = show.created_by?.[0];
   const mainCast = credits.cast.slice(0, 6);
   const trailer = videos.results.find(
-    (video) => video.type === "Trailer" && video.site === "YouTube"
+    (video) => video.type === "Trailer" && video.site === "YouTube",
   );
 
   const handleWatchNow = () => {
     setShowPlayer(true);
     router.push(
-      `/tv/${show.id}/watch?season=${selectedSeason}&episode=${selectedEpisode}`
+      `/tv/${show.id}/watch?season=${selectedSeason}&episode=${selectedEpisode}`,
     );
   };
 
@@ -130,7 +131,7 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                   <div className="flex items-center space-x-1">
                     <Star className="h-5 w-5 text-yellow-400 fill-current" />
                     <span className="text-white font-semibold">
-                      {show.vote_average.toFixed(1)}
+                      {(show.vote_average || 0).toFixed(1)}
                     </span>
                     <span className="text-gray-400">
                       ({show.vote_count.toLocaleString()} votes)
@@ -206,9 +207,8 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                 </div>
               </div>
 
-              {/* Tabs for different sections */}
               <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 bg-gray-800">
+                <TabsList className="flex overflow-x-auto lg:grid w-full lg:grid-cols-6 bg-gray-800 scrollbar-none rounded-none sm:rounded-md">
                   <TabsTrigger
                     value="overview"
                     className="text-white data-[state=active]:bg-red-600"
@@ -238,6 +238,12 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                     className="text-white data-[state=active]:bg-red-600"
                   >
                     Discussion
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="reviews"
+                    className="text-white data-[state=active]:bg-red-600"
+                  >
+                    Reviews
                   </TabsTrigger>
                 </TabsList>
 
@@ -302,7 +308,7 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                       setSelectedEpisode(episode);
                       setShowPlayer(true);
                       router.push(
-                        `/tv/${show.id}/watch?season=${season}&episode=${episode}`
+                        `/tv/${show.id}/watch?season=${season}&episode=${episode}`,
                       );
                     }}
                     setSelectedSeasonMain={setSelectedSeason}
@@ -374,6 +380,14 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                     mediaPoster={show?.poster_path || ""}
                   />
                 </TabsContent>
+
+                <TabsContent value="reviews">
+                  <UserReviews
+                    mediaId={show.id.toString()}
+                    mediaType="tv"
+                    mediaTitle={show.name}
+                  />
+                </TabsContent>
               </Tabs>
             </div>
           </div>
@@ -395,7 +409,7 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
           }}
           onEpisodeSelect={(selectedSeason, selectedEpisode) =>
             router.push(
-              `/tv/${show.id}/watch?season=${selectedSeason}&episode=${selectedEpisode}`
+              `/tv/${show.id}/watch?season=${selectedSeason}&episode=${selectedEpisode}`,
             )
           }
           show={show}

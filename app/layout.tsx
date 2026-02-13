@@ -1,23 +1,36 @@
-import type React from "react"
-import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
-import Header from "@/components/header"
-import Footer from "@/components/footer"
-import { AuthProvider } from "@/contexts/auth-context"
-import { FavoritesProvider } from "@/contexts/favorites-context"
-import { Analytics } from "@vercel/analytics/next"
+import type React from "react";
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
+import { AuthProvider } from "@/contexts/auth-context";
+import { FavoritesProvider } from "@/contexts/favorites-context";
+import { SettingsProvider } from "@/contexts/settings-context";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
+import { CookieBanner } from "@/components/cookie-banner";
 
-import "./globals.css"
+import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
     default: "StreameFlix - Watch Movies & TV Shows Free",
-    template: "%s | StreameFlix"
+    template: "%s | StreameFlix",
   },
-  description: "Stream the latest movies and TV shows in HD quality. Discover trending content, search by genre, and enjoy unlimited entertainment.",
-  keywords: ["movies", "streaming", "entertainment", "TV shows", "cinema", "watch online", "free movies"],
+  description:
+    "Stream the latest movies and TV shows in HD quality. Discover trending content, search by genre, and enjoy unlimited entertainment.",
+  keywords: [
+    "movies",
+    "streaming",
+    "entertainment",
+    "TV shows",
+    "cinema",
+    "watch online",
+    "free movies",
+  ],
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.ico",
@@ -39,32 +52,42 @@ export const metadata: Metadata = {
       },
     ],
   },
-}
+};
 
 export const viewport: Viewport = {
   themeColor: "#dc2626",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} bg-black text-white antialiased`}>
-        <AuthProvider>
-          <FavoritesProvider>
-            <Header />
-            <main className="pt-16 min-h-screen">{children}</main>
-            <Footer />
-          </FavoritesProvider>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+        >
+          <SettingsProvider>
+            <AuthProvider>
+              <FavoritesProvider>
+                <Header />
+                <main className="pt-16 min-h-screen">{children}</main>
+                <Footer />
+                <Toaster richColors position="bottom-right" />
+                <CookieBanner />
+              </FavoritesProvider>
+            </AuthProvider>
+          </SettingsProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
-  )
+  );
 }
