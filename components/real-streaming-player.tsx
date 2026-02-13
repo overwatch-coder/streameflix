@@ -110,7 +110,6 @@ export default function RealStreamingPlayer({
     }
     return 0;
   });
-  const [isServerModalOpen, setIsServerModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -362,87 +361,30 @@ export default function RealStreamingPlayer({
             </div>
             {streamingUrls.length > 1 && (
               <div className="flex items-center gap-2">
-                <Dialog
-                  open={isServerModalOpen}
-                  onOpenChange={setIsServerModalOpen}
+                <Select
+                  value={currentSourceIndex.toString()}
+                  onValueChange={(value) => {
+                    setCurrentSourceIndex(parseInt(value));
+                    setIsLoading(true);
+                    setError(null);
+                  }}
                 >
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-white bg-white/5 border-white/10 hover:bg-white/10 hidden sm:flex"
-                    >
-                      <RotateCcw className="h-4 w-4 mr-2" /> Change Server
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-gray-950 border-gray-800 text-white max-w-4xl max-h-[90vh] flex flex-col">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl font-bold">
-                        Select Streaming Server
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4 overflow-y-auto pr-2 custom-scrollbar">
-                      {streamingUrls.map((url, i) => {
-                        const src = streamingSources.find((s) =>
-                          url.startsWith(s.baseUrl),
-                        );
-                        const isActive = currentSourceIndex === i;
-                        return (
-                          <button
-                            key={i}
-                            onClick={() => {
-                              setCurrentSourceIndex(i);
-                              setIsServerModalOpen(false);
-                              setIsLoading(true);
-                              setError(null);
-                            }}
-                            className={cn(
-                              "flex flex-col text-left p-4 rounded-xl border transition-all hover:scale-[1.02]",
-                              isActive
-                                ? "bg-red-600/20 border-red-600 ring-1 ring-red-600"
-                                : "bg-white/5 border-white/10 hover:bg-white/10",
-                            )}
-                          >
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="font-bold text-lg">
-                                {src?.name || `Server ${i + 1}`}
-                              </span>
-                              {isActive && (
-                                <Badge className="bg-red-600 text-white">
-                                  Active
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {src?.supportsQuality && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] py-0 border-white/20"
-                                >
-                                  HD
-                                </Badge>
-                              )}
-                              {src?.supportsSubtitles && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] py-0 border-white/20"
-                                >
-                                  Subtitles
-                                </Badge>
-                              )}
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] py-0 border-white/20 uppercase"
-                              >
-                                {src?.idType}
-                              </Badge>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                  <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white hidden sm:flex">
+                    <SelectValue placeholder="Select Server" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-950 border-gray-800 text-white">
+                    {streamingUrls.map((url, i) => {
+                      const src = streamingSources.find((s) =>
+                        url.startsWith(s.baseUrl),
+                      );
+                      return (
+                        <SelectItem key={i} value={i.toString()}>
+                          {src?.name || `Server ${i + 1}`}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
 
                 {/* Mobile Server Toggle */}
                 <Button
