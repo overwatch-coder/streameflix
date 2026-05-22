@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     const token = await createSessionToken({ userId: user.id, email: user.email });
     const response = NextResponse.json({ user: serializeUser(user) });
-    response.cookies.set(SESSION_COOKIE_NAME, token, sessionCookieOptions());
+    response.cookies.set(SESSION_COOKIE_NAME, token, sessionCookieOptions(request));
     return response;
   } catch (error) {
     return serverError(error);

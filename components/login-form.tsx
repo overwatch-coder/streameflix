@@ -8,6 +8,7 @@ import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
 
 export default function LoginForm() {
@@ -16,6 +17,7 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const { refreshProfile } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,6 +37,7 @@ export default function LoginForm() {
       if (!response.ok) {
         setError(data.error || "Unable to sign in.");
       } else {
+        await refreshProfile();
         router.push("/");
         router.refresh();
       }

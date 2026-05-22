@@ -118,9 +118,10 @@ export default function Header() {
     router.push("/social");
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push("/");
+    router.refresh();
   };
 
   const handleSearch = (e: React.FormEvent) => {

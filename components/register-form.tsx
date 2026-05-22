@@ -8,6 +8,7 @@ import { Eye, EyeOff, Mail, Lock, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
 
 export default function RegisterForm() {
@@ -18,8 +19,10 @@ export default function RegisterForm() {
     confirmPassword: "",
   })
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const { refreshProfile } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,6 +52,7 @@ export default function RegisterForm() {
       if (!response.ok) {
         setError(data.error || "Unable to create account.")
       } else {
+        await refreshProfile()
         router.push("/")
         router.refresh()
       }
@@ -143,13 +147,20 @@ export default function RegisterForm() {
           <Input
             id="confirmPassword"
             name="confirmPassword"
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             value={formData.confirmPassword}
             onChange={handleChange}
-            className="pl-10 bg-gray-800 border-gray-700 text-white focus:border-red-500"
+            className="pl-10 pr-10 bg-gray-800 border-gray-700 text-white focus:border-red-500"
             placeholder="Confirm your password"
             required
           />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+          >
+            {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
         </div>
       </div>
 

@@ -1,12 +1,25 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   FaFacebook as Facebook,
   FaInstagram as Instagram,
   FaYoutube as Youtube,
 } from "react-icons/fa";
 import { FaSquareXTwitter as Twitter } from "react-icons/fa6";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function Footer() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+    router.refresh();
+  };
+
   return (
     <footer className="bg-black border-t border-gray-800 py-12">
       <div className="container mx-auto px-4 md:px-8">
@@ -160,22 +173,36 @@ export default function Footer() {
                   Settings
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/auth/login"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Sign In
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/auth/register"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Sign Up
-                </Link>
-              </li>
+              {user ? (
+                <li>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    Log Out
+                  </button>
+                </li>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      href="/auth/login"
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
+                      Sign In
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/auth/register"
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
+                      Sign Up
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </div>
