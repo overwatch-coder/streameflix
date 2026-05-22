@@ -18,6 +18,11 @@ export default async function GenresPage() {
 }
 
 async function GenreGridWrapper() {
-  const genres = await getGenres()
-  return <GenreGrid genres={genres.genres} />
+  try {
+    const genres = await getGenres()
+    return <GenreGrid genres={genres.genres} />
+  } catch (error) {
+    console.error("Failed to load genres:", error)
+    return <GenreGrid genres={[]} />
+  }
 }

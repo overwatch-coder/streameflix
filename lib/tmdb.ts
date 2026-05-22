@@ -1,13 +1,30 @@
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
-if (!TMDB_API_KEY) {
+function isPlaceholderApiKey(apiKey: string | undefined) {
+  return !apiKey || apiKey.startsWith("your_");
+}
+
+function emptyTMDBResponse(endpoint: string) {
+  if (endpoint.includes("/genre/")) {
+    return { genres: [] };
+  }
+
+  return {
+    page: 1,
+    results: [],
+    total_pages: 0,
+    total_results: 0,
+  };
+}
+
+if (isPlaceholderApiKey(TMDB_API_KEY)) {
   console.warn("TMDB API key is not configured");
 }
 
 async function fetchFromTMDB(endpoint: string) {
-  if (!TMDB_API_KEY) {
-    throw new Error("TMDB API key is not configured");
+  if (isPlaceholderApiKey(TMDB_API_KEY)) {
+    return emptyTMDBResponse(endpoint);
   }
 
   const url = `${TMDB_BASE_URL}${endpoint}${

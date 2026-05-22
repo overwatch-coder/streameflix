@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,9 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MessageSquare, Star, Film } from "lucide-react";
+import { MessageSquare, Film } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useAuth } from "@/contexts/auth-context";
 
 interface UserProfileModalProps {
   userId: string | null;
@@ -28,41 +26,30 @@ export default function UserProfileModal({
   const [profile, setProfile] = useState<any>(null);
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { supabase } = useAuth();
 
-  useEffect(() => {
-    if (userId && isOpen) {
-      fetchUserProfile();
-    }
-  }, [userId, isOpen]);
-
-  async function fetchUserProfile() {
+  const fetchUserProfile = useCallback(async () => {
+    if (!userId) return;
     setIsLoading(true);
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (profileError) throw profileError;
-      setProfile(profileData);
-
-      const { data: postsData, error: postsError } = await supabase
-        .from("discussions")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      if (postsError) throw postsError;
-      setRecentPosts(postsData || []);
+      const response = await fetch(`/api/profiles/${userId}`, {
+        cache: "no-store",
+      });
+      if (!response.ok) throw new Error("Failed to fetch profile");
+      const data = await response.json();
+      setProfile(data.profile);
+      setRecentPosts(data.recentPosts || []);
     } catch (error) {
       console.error("Error fetching user profile:", error);
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId && isOpen) {
+      fetchUserProfile();
+    }
+  }, [userId, isOpen, fetchUserProfile]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

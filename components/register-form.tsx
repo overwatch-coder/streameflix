@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase"
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -22,7 +21,6 @@ export default function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,28 +34,23 @@ export default function RegisterForm() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.name,
-            avatar_url: "/placeholder.svg?height=40&width=40",
-          },
-        },
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
       })
+      const data = await response.json()
 
-      if (error) {
-        setError(error.message)
+      if (!response.ok) {
+        setError(data.error || "Unable to create account.")
       } else {
-        // Check if session was created (auto sign in) or if email confirmation is required
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          router.push("/")
-          router.refresh()
-        } else {
-          setError("Account created! Please check your email to confirm.")
-        }
+        router.push("/")
+        router.refresh()
       }
     } catch (err) {
       setError("Something went wrong. Please try again.")

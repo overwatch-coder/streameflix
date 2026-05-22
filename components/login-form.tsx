@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -18,7 +17,6 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const supabase = createClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,16 +24,19 @@ export default function LoginForm() {
     setError("");
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
       });
+      const data = await response.json();
 
-      if (error) {
-        setError(error.message);
+      if (!response.ok) {
+        setError(data.error || "Unable to sign in.");
       } else {
         router.push("/");
-        router.refresh(); // Refresh to update server components/auth state
+        router.refresh();
       }
     } catch (err: any) {
       setError("Something went wrong. Please try again.");

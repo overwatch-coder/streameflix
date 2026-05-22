@@ -67,7 +67,7 @@ export default function ProfilePage() {
   }
 
   const handleSave = async () => {
-    // In a real app, you would upload the image to Supabase Storage and update the user metadata
+    // In a real app, upload the image through the profile avatar API.
     if (newAvatar) {
       // Simulate image upload
       await new Promise((resolve) => setTimeout(resolve, 500));

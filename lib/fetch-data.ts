@@ -1,5 +1,4 @@
 import { Discussion } from "@/components/social-feed";
-import { supabase } from "./supabase";
 
 interface GetDiscussionsParams {
   mediaId?: string;
@@ -12,53 +11,28 @@ export const getDiscussions = async ({
   mediaId,
   mediaType,
   limit,
-  user_id,
 }: GetDiscussionsParams): Promise<Discussion[]> => {
   try {
-    let query = supabase
-      .from("discussions")
-      .select(
-        `
-          *,
-          profiles (username, avatar_url, full_name, reactions (type, user_id)),
-          discussion_replies (
-            *,
-            profiles (username, avatar_url, full_name, reactions (type, user_id))
-          )
-        `,
-      )
-      .order("created_at", { ascending: false });
+    const params = new URLSearchParams();
+    if (mediaId) params.set("media_id", mediaId);
+    if (mediaType) params.set("media_type", mediaType);
+    if (limit) params.set("limit", String(limit));
 
-    if (mediaId && mediaType) {
-      query = query.eq("media_id", mediaId).eq("media_type", mediaType);
-    }
+    const response = await fetch(`/api/discussions?${params.toString()}`, {
+      cache: "no-store",
+    });
 
-    if (limit) {
-      query = query.limit(limit);
-    }
+    if (!response.ok) throw new Error("Failed to fetch discussions");
 
-    const { data, error } = await query;
-
-    if (error) throw error;
-
-    return formatDiscussions(data || [], user_id || "");
+    const data = await response.json();
+    return data.discussions || [];
   } catch (error: any) {
     console.log("Error fetching discussions: ", { error });
     return [];
   }
 };
 
-export const formatDiscussions = (
-  discussions: Discussion[],
-  user_id: string,
-) => {
+export const formatDiscussions = (discussions: Discussion[]) => {
   if (!discussions?.length) return [];
-
-  return discussions.map((discussion) => ({
-    ...discussion,
-    reactions: discussion?.profiles?.reactions?.filter(
-      (reaction: { user_id: string; type: string }) =>
-        reaction.user_id === user_id,
-    ),
-  }));
+  return discussions;
 };

@@ -18,7 +18,7 @@ export default function Privacy() {
     {
       title: "Third Parties",
       content:
-        "We do not sell your personal data. We use Supabase for authentication and database management, and TMDB for content metadata.",
+        "We do not sell your personal data. We use our application database for authentication and profile data, Cloudinary for uploaded media, and TMDB for content metadata.",
     },
     {
       title: "Security",

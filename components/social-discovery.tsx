@@ -25,23 +25,18 @@ export default function SocialDiscovery({
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const { user, supabase } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchProfiles() {
       setIsLoading(true);
       try {
-        let query = supabase.from("profiles").select("*").limit(20);
-
-        if (searchQuery) {
-          query = query.or(
-            `username.ilike.%${searchQuery}%,full_name.ilike.%${searchQuery}%`,
-          );
-        }
-
-        const { data, error } = await query;
-        if (error) throw error;
-        setProfiles(data || []);
+        const params = new URLSearchParams();
+        if (searchQuery) params.set("q", searchQuery);
+        const response = await fetch(`/api/profiles/search?${params.toString()}`);
+        if (!response.ok) throw new Error("Failed to fetch profiles");
+        const data = await response.json();
+        setProfiles(data.profiles || []);
       } catch (error) {
         console.error("Error fetching profiles:", error);
       } finally {
@@ -54,7 +49,7 @@ export default function SocialDiscovery({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, supabase]);
+  }, [searchQuery]);
 
   return (
     <div className="space-y-6">

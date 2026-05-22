@@ -15,14 +15,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/contexts/auth-context";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface ReviewReply {
-  id: number;
-  review_id: number;
+  id: string;
+  review_id: string;
   user_id: string;
   content: string;
   created_at: string;
@@ -39,7 +38,7 @@ interface Reaction {
 }
 
 interface Review {
-  id: number;
+  id: string;
   user_id: string;
   rating: number;
   content: string;
@@ -78,46 +77,33 @@ export default function UserReviews({
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
 
-  const { user, supabase } = useAuth();
+  const { user } = useAuth();
 
   const fetchReviews = useCallback(async () => {
     setIsLoading(true);
     try {
-      let query = supabase
-        .from("reviews")
-        .select(
-          `
-          *,
-          profiles (username, avatar_url, full_name),
-          review_replies (
-            *,
-            profiles (username, avatar_url, full_name)
-          )
-        `,
-        )
-        .eq("media_id", mediaId)
-        .eq("media_type", mediaType)
-        .order("created_at", { ascending: false });
+      const params = new URLSearchParams({
+        media_id: mediaId,
+        media_type: mediaType,
+      });
+      if (seasonNumber !== undefined) params.set("season_number", String(seasonNumber));
+      if (episodeNumber !== undefined) params.set("episode_number", String(episodeNumber));
 
-      if (seasonNumber !== undefined) {
-        query = query.eq("season_number", seasonNumber);
-      }
-      if (episodeNumber !== undefined) {
-        query = query.eq("episode_number", episodeNumber);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setReviews(data || []);
+      const response = await fetch(`/api/reviews?${params.toString()}`, {
+        cache: "no-store",
+      });
+      if (!response.ok) throw new Error("Failed to fetch reviews");
+      const data = await response.json();
+      setReviews(data.reviews || []);
     } catch (error) {
       console.error("Error fetching reviews:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [mediaId, mediaType, seasonNumber, episodeNumber, supabase]);
+  }, [mediaId, mediaType, seasonNumber, episodeNumber]);
 
   useEffect(() => {
     fetchReviews();
@@ -132,18 +118,22 @@ export default function UserReviews({
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("reviews").insert({
-        user_id: user.id,
-        media_id: mediaId,
-        media_type: mediaType,
-        rating: userRating,
-        content: userComment,
-        season_number: seasonNumber,
-        episode_number: episodeNumber,
-        media_title: mediaTitle,
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          media_id: mediaId,
+          media_type: mediaType,
+          rating: userRating,
+          content: userComment,
+          season_number: seasonNumber,
+          episode_number: episodeNumber,
+          media_title: mediaTitle,
+        }),
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to submit review");
 
       setUserRating(0);
       setUserComment("");
@@ -155,17 +145,18 @@ export default function UserReviews({
     }
   };
 
-  const handleReply = async (reviewId: number) => {
+  const handleReply = async (reviewId: string) => {
     if (!user || !replyContent.trim()) return;
 
     try {
-      const { error } = await supabase.from("review_replies").insert({
-        review_id: reviewId,
-        user_id: user.id,
-        content: replyContent,
+      const response = await fetch(`/api/reviews/${reviewId}/replies`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ content: replyContent }),
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to create reply");
 
       setReplyContent("");
       setReplyingTo(null);
@@ -175,48 +166,33 @@ export default function UserReviews({
     }
   };
 
-  const handleReaction = async (targetId: number, type: "like" | "dislike") => {
+  const handleReaction = async (targetId: string, type: "like" | "dislike") => {
     if (!user) return;
 
     try {
-      const existing = reviews
-        .find((r) => r.id === targetId)
-        ?.reactions?.find((react) => react.user_id === user.id);
-
-      if (existing) {
-        if (existing.type === type) {
-          await supabase
-            .from("reactions")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("target_id", targetId)
-            .eq("target_type", "review");
-        } else {
-          await supabase
-            .from("reactions")
-            .update({ type })
-            .eq("user_id", user.id)
-            .eq("target_id", targetId)
-            .eq("target_type", "review");
-        }
-      } else {
-        await supabase.from("reactions").insert({
-          user_id: user.id,
+      await fetch("/api/reactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
           target_id: targetId,
           target_type: "review",
           type,
-        });
-      }
+        }),
+      });
       fetchReviews();
     } catch (error) {
       console.error("Error handling reaction:", error);
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase.from("reviews").delete().eq("id", id);
-      if (error) throw error;
+      const response = await fetch(`/api/reviews/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to delete review");
       fetchReviews();
     } catch (error) {
       console.error("Error deleting review:", error);

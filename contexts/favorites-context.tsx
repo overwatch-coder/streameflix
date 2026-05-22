@@ -9,7 +9,6 @@ import {
   useCallback,
 } from "react";
 import { useAuth } from "./auth-context";
-import { createClient } from "@/lib/supabase";
 
 interface WatchProgress {
   id: number | string;
@@ -59,7 +58,7 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(
 );
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
-  const { supabaseUser, supabase } = useAuth();
+  const { user } = useAuth();
   const [favorites, setFavorites] = useState<FavoriteTVandMovie[]>([]);
   const [watchlist, setWatchlist] = useState<FavoriteTVandMovie[]>([]);
   const [continueWatching, setContinueWatching] = useState<WatchProgress[]>([]);
@@ -68,7 +67,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
   const loadUserData = useCallback(
     async (force = false) => {
-      if (!supabaseUser) {
+      if (!user) {
         setFavorites([]);
         setWatchlist([]);
         setContinueWatching([]);
@@ -79,85 +78,37 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       // If we already loaded data for this user, don't show loading state unless forced
       // We can still do a background refresh if needed, but for now let's just avoid unnecessary re-fetches
       // that cause skeleton flickering.
-      if (!force && loadedUserId === supabaseUser.id) {
+      if (!force && loadedUserId === user.id) {
         return;
       }
 
       setIsLoading(true);
 
       try {
-        // Load Favorites
-        const { data: favs } = await supabase
-          .from("favorites")
-          .select("*")
-          .eq("user_id", supabaseUser.id);
+        const [favoritesResponse, watchlistResponse, historyResponse] =
+          await Promise.all([
+            fetch("/api/library/favorites", { credentials: "include" }),
+            fetch("/api/library/watchlist", { credentials: "include" }),
+            fetch("/api/library/history", { credentials: "include" }),
+          ]);
 
-        if (favs) {
-          setFavorites(
-            favs.map((f: any) => ({
-              id: parseInt(f.media_id),
-              title: f.title,
-              poster_path: f.poster_path,
-              vote_average: f.vote_average,
-              type: f.media_type as "movie" | "tv",
-              release_date: "", // Not stored, maybe add later or optional
-              overview: f.overview || "",
-            })),
-          );
-        }
+        const [favoritesData, watchlistData, historyData] = await Promise.all([
+          favoritesResponse.json(),
+          watchlistResponse.json(),
+          historyResponse.json(),
+        ]);
 
-        // Load Watchlist
-        const { data: wl } = await supabase
-          .from("watch_list")
-          .select("*")
-          .eq("user_id", supabaseUser.id);
-
-        if (wl) {
-          setWatchlist(
-            wl.map((w: any) => ({
-              id: parseInt(w.media_id),
-              title: w.title,
-              poster_path: w.poster_path,
-              vote_average: w.vote_average,
-              type: w.media_type as "movie" | "tv",
-              release_date: "",
-              overview: w.overview || "",
-            })),
-          );
-        }
-
-        // Load Watch History
-        const { data: hist } = await supabase
-          .from("watch_history")
-          .select("*")
-          .eq("user_id", supabaseUser.id)
-          .order("last_watched_at", { ascending: false });
-
-        if (hist) {
-          setContinueWatching(
-            hist.map((h: any) => ({
-              id: parseInt(h.media_id),
-              title: h.title,
-              type: h.media_type as "movie" | "tv",
-              poster_path: h.poster_path,
-              progress: h.progress,
-              currentTime: h.progress,
-              duration: h.duration,
-              lastWatched: h.last_watched_at,
-              seasonNumber: h.season_number,
-              episodeNumber: h.episode_number,
-            })),
-          );
-        }
-
-        setLoadedUserId(supabaseUser.id);
+        setFavorites(favoritesData.favorites || []);
+        setWatchlist(watchlistData.watchlist || []);
+        setContinueWatching(historyData.history || []);
+        setLoadedUserId(user.id);
       } catch (error) {
         console.error("Error loading user data:", error);
       } finally {
         setIsLoading(false);
       }
     },
-    [supabaseUser, loadedUserId],
+    [user, loadedUserId],
   );
 
   useEffect(() => {
@@ -165,27 +116,28 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   }, [loadUserData]);
 
   const addToFavorites = async (item: FavoriteTVandMovie) => {
-    if (!supabaseUser) return;
+    if (!user) return;
 
     // Optimistic update
     const newFavorites = [...favorites, item];
     setFavorites(newFavorites);
 
     try {
-      const { error } = await supabase.from("favorites").upsert(
-        {
-          user_id: supabaseUser.id,
+      const response = await fetch("/api/library/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
           media_id: item.id.toString(),
           media_type: item.type,
           title: item.title || item.name || "",
           poster_path: item.poster_path,
           vote_average: item.vote_average,
           overview: item.overview,
-        },
-        { onConflict: "user_id,media_id,media_type" },
-      );
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to add favorite");
     } catch (error) {
       console.error("Error adding to favorites:", error);
       setFavorites(favorites); // Revert
@@ -193,18 +145,18 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   };
 
   const removeFromFavorites = async (id: number) => {
-    if (!supabaseUser) return;
+    if (!user) return;
 
     const newFavorites = favorites.filter((item) => item.id !== id);
     setFavorites(newFavorites);
 
     try {
-      const { error } = await supabase.from("favorites").delete().match({
-        user_id: supabaseUser.id,
-        media_id: id.toString(),
+      const response = await fetch(`/api/library/favorites?media_id=${id}`, {
+        method: "DELETE",
+        credentials: "include",
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to remove favorite");
     } catch (error) {
       console.error("Error removing from favorites:", error);
       setFavorites(favorites);
@@ -212,26 +164,27 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   };
 
   const addToWatchlist = async (item: FavoriteTVandMovie) => {
-    if (!supabaseUser) return;
+    if (!user) return;
 
     const newWatchlist = [...watchlist, item];
     setWatchlist(newWatchlist);
 
     try {
-      const { error } = await supabase.from("watch_list").upsert(
-        {
-          user_id: supabaseUser.id,
+      const response = await fetch("/api/library/watchlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
           media_id: item.id.toString(),
           media_type: item.type,
           title: item.title || item.name || "",
           poster_path: item.poster_path,
           vote_average: item.vote_average,
           overview: item.overview,
-        },
-        { onConflict: "user_id,media_id,media_type" },
-      );
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to add watchlist item");
     } catch (error) {
       console.error("Error adding to watchlist:", error);
       setWatchlist(watchlist);
@@ -239,18 +192,18 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   };
 
   const removeFromWatchlist = async (id: number) => {
-    if (!supabaseUser) return;
+    if (!user) return;
 
     const newWatchlist = watchlist.filter((item) => item.id !== id);
     setWatchlist(newWatchlist);
 
     try {
-      const { error } = await supabase.from("watch_list").delete().match({
-        user_id: supabaseUser.id,
-        media_id: id.toString(),
+      const response = await fetch(`/api/library/watchlist?media_id=${id}`, {
+        method: "DELETE",
+        credentials: "include",
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to remove watchlist item");
     } catch (error) {
       console.error("Error removing from watchlist:", error);
       setWatchlist(watchlist);
@@ -258,7 +211,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   };
 
   const updateWatchProgress = async (progress: WatchProgress) => {
-    if (!supabaseUser) return;
+    if (!user) return;
 
     const existingIndex = continueWatching.findIndex(
       (item) => item.id == progress.id,
@@ -276,9 +229,11 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     setContinueWatching(newContinueWatching);
 
     try {
-      const { error } = await supabase.from("watch_history").upsert(
-        {
-          user_id: supabaseUser.id,
+      const response = await fetch("/api/library/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
           media_id: progress.id.toString(),
           media_type: progress.type,
           title: progress.title,
@@ -287,19 +242,17 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
           episode_number: progress.episodeNumber,
           progress: progress.currentTime,
           duration: progress.duration,
-          last_watched_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,media_id,media_type" },
-      );
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to update watch history");
     } catch (error) {
       console.error("Error updating watch history:", error);
     }
   };
 
   const removeFromContinueWatching = async (id: number) => {
-    if (!supabaseUser) return;
+    if (!user) return;
 
     const newContinueWatching = continueWatching.filter(
       (item) => item.id != id,
@@ -307,12 +260,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     setContinueWatching(newContinueWatching);
 
     try {
-      const { error } = await supabase.from("watch_history").delete().match({
-        user_id: supabaseUser.id,
-        media_id: id.toString(),
+      const response = await fetch(`/api/library/history?media_id=${id}`, {
+        method: "DELETE",
+        credentials: "include",
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to remove watch history item");
     } catch (error) {
       console.error("Error removing from watch history:", error);
       setContinueWatching(continueWatching);

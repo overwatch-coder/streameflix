@@ -7,7 +7,6 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/auth-context";
 import { formatDiscussions } from "@/lib/fetch-data";
-import { supabase } from "@/lib/supabase";
 
 interface TrendingDiscussion {
   id: number;
@@ -29,20 +28,13 @@ export default function TrendingDiscussions() {
     async function fetchTrending() {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("discussions")
-          .select(
-            `
-            *,
-            profiles (username, avatar_url, full_name),
-            discussion_replies (*)
-          `,
-          )
-          .limit(20);
+        const response = await fetch("/api/discussions?limit=20", {
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error("Failed to fetch discussions");
+        const data = await response.json();
 
-        if (error) throw error;
-
-        const formatted: any = formatDiscussions(data || [], user?.id || "")
+        const formatted: any = formatDiscussions(data.discussions || [])
           .map((item) => ({
             ...item,
             reply_count: item.discussion_replies?.length || 0,
@@ -64,7 +56,7 @@ export default function TrendingDiscussions() {
     }
 
     fetchTrending();
-  }, [supabase]);
+  }, [user?.id]);
 
   if (isLoading) {
     return (

@@ -26,11 +26,10 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getDiscussions } from "@/lib/fetch-data";
-import { supabase } from "@/lib/supabase";
 
 interface Reply {
-  id: number;
-  discussion_id: number;
+  id: string;
+  discussion_id: string;
   user_id: string;
   content: string;
   created_at: string;
@@ -48,7 +47,7 @@ interface Reaction {
 }
 
 export interface Discussion {
-  id: number;
+  id: string;
   user_id: string;
   content: string;
   media_id?: string;
@@ -85,7 +84,7 @@ export default function SocialFeed({
 }: SocialFeedProps) {
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [newPost, setNewPost] = useState("");
-  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -126,16 +125,20 @@ export default function SocialFeed({
     if (!user || !newPost.trim()) return;
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("discussions").insert({
-        user_id: user.id,
-        content: newPost,
-        media_id: mediaId,
-        media_type: mediaType,
-        media_title: mediaTitle,
-        media_poster: mediaPoster,
+      const response = await fetch("/api/discussions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          content: newPost,
+          media_id: mediaId,
+          media_type: mediaType,
+          media_title: mediaTitle,
+          media_poster: mediaPoster,
+        }),
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to post discussion");
 
       setNewPost("");
       await refreshDiscussions();
@@ -146,17 +149,18 @@ export default function SocialFeed({
     }
   };
 
-  const handleReply = async (discussionId: number) => {
+  const handleReply = async (discussionId: string) => {
     if (!user || !replyContent.trim()) return;
 
     try {
-      const { error } = await supabase.from("discussion_replies").insert({
-        discussion_id: discussionId,
-        user_id: user.id,
-        content: replyContent,
+      const response = await fetch(`/api/discussions/${discussionId}/replies`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ content: replyContent }),
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to create reply");
 
       setReplyContent("");
       setReplyingTo(null);
@@ -166,55 +170,33 @@ export default function SocialFeed({
     }
   };
 
-  const handleReaction = async (targetId: number, type: "like" | "dislike") => {
+  const handleReaction = async (targetId: string, type: "like" | "dislike") => {
     if (!user) return;
 
     try {
-      // Check for existing reaction
-      const existing = discussions
-        .find((d) => d.id === targetId)
-        ?.reactions.find((r) => r.user_id === user.id);
-
-      if (existing) {
-        if (existing.type === type) {
-          // Remove reaction
-          await supabase
-            .from("reactions")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("target_id", targetId)
-            .eq("target_type", "discussion");
-        } else {
-          // Update reaction
-          await supabase
-            .from("reactions")
-            .update({ type })
-            .eq("user_id", user.id)
-            .eq("target_id", targetId)
-            .eq("target_type", "discussion");
-        }
-      } else {
-        // Add reaction
-        await supabase.from("reactions").insert({
-          user_id: user.id,
+      await fetch("/api/reactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
           target_id: targetId,
           target_type: "discussion",
           type,
-        });
-      }
+        }),
+      });
       refreshDiscussions();
     } catch (error) {
       console.error("Error handling reaction:", error);
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from("discussions")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
+      const response = await fetch(`/api/discussions/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to delete post");
       setDiscussions((prev) => prev.filter((d) => d.id !== id));
     } catch (error) {
       console.error("Error deleting post:", error);

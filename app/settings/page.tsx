@@ -43,12 +43,11 @@ import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { redirect, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { createClient } from "@/lib/supabase";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
-  const { user, logout, supabaseUser, supabase } = useAuth();
+  const { user, logout, refreshProfile } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -83,28 +82,28 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    if (!supabaseUser) return;
-    const userId = supabaseUser.id;
+    if (!user) return;
 
     async function loadProfile() {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
+      const response = await fetch("/api/profile", {
+        credentials: "include",
+        cache: "no-store",
+      });
+      const data = await response.json();
+      const profile = data.profile;
 
-      if (data) {
+      if (profile) {
         setSettings((prev) => ({
           ...prev,
-          name: data.full_name || prev.name,
-          username: data.username || prev.username,
-          avatar_url: data.avatar_url || prev.avatar_url,
-          bio: data.bio || "",
+          name: profile.full_name || prev.name,
+          username: profile.username || prev.username,
+          avatar_url: profile.avatar_url || prev.avatar_url,
+          bio: profile.bio || "",
         }));
       }
     }
     loadProfile();
-  }, [supabaseUser, supabase]);
+  }, [user]);
 
   if (!user) {
     redirect("/auth/login");
@@ -115,23 +114,27 @@ export default function SettingsPage() {
   };
 
   const handleSaveProfile = async () => {
-    if (!supabaseUser) {
+    if (!user) {
       toast.error("You must be logged in to update your profile");
       return;
     }
-    const userId = supabaseUser.id;
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
+      const response = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
           full_name: settings.name,
           username: settings.username,
           avatar_url: settings.avatar_url,
-        })
-        .eq("id", userId);
+          bio: settings.bio,
+        }),
+      });
 
-      if (error) throw error;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to update profile");
+      await refreshProfile();
       toast.success("Profile updated successfully!");
       router.refresh();
     } catch (error: any) {
@@ -143,33 +146,23 @@ export default function SettingsPage() {
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !supabaseUser) return;
-    const userId = supabaseUser.id;
+    if (!file || !user) return;
 
     setIsUploading(true);
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${userId}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = fileName; // Upload to root of bucket or specific folder
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/profile/avatar", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const data = await response.json();
 
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file);
+      if (!response.ok) throw new Error(data.error || "Failed to upload avatar");
 
-      if (uploadError) throw uploadError;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
-
-      setSettings((prev) => ({ ...prev, avatar_url: publicUrl }));
-
-      // Also update profile immediately
-      await supabase
-        .from("profiles")
-        .update({ avatar_url: publicUrl })
-        .eq("id", userId);
-
+      setSettings((prev) => ({ ...prev, avatar_url: data.avatar_url }));
+      await refreshProfile();
       toast.success("Avatar uploaded successfully!");
     } catch (error: any) {
       toast.error(error.message || "Failed to upload avatar");
@@ -185,8 +178,6 @@ export default function SettingsPage() {
       )
     ) {
       try {
-        // In a real Supabase setup, you might need a service role or edge function to delete the auth user.
-        // For now, we sign out and let the user know.
         toast.info("Account deletion request submitted.");
         await logout();
         router.push("/");
