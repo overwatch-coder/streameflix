@@ -1,52 +1,23 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import {
-  X,
-  RotateCcw,
-  PlayCircle,
-  Star,
-  ChevronLeft,
-  ChevronRight,
-  AlertCircle,
-  Plus,
-  Check,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { useSettings } from "@/contexts/settings-context";
-import {
-  getStreamingUrls,
-  streamingSources,
-  StreamingSource,
-} from "@/lib/streaming-sources";
-import { Episode, TVDetails } from "@/types/tv";
-import { getTVSeasonDetails } from "@/lib/tmdb";
-import MovieRecommendations from "@/components/movie-recommendations";
-import TVRecommendations from "@/components/tv-recommendations";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
-import { placeholderImage } from "./movie-card";
+import { Plus, Check, Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useSettings } from "@/contexts/settings-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useAuth } from "@/contexts/auth-context";
+import { getStreamingUrls } from "@/lib/streaming-sources";
+import { getTVSeasonDetails } from "@/lib/tmdb";
+import { Episode, TVDetails } from "@/types/tv";
 import { ShareModal } from "@/components/share-modal";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SocialFeed from "./social-feed";
-import UserReviews from "./user-reviews";
-import { cn } from "@/lib/utils";
+
+import { PlayerEmbed } from "./player/player-embed";
+import { PlayerHeader } from "./player/player-header";
+import { EpisodeSelector } from "./player/episode-selector";
+import { PlayerTabs } from "./player/player-tabs";
+import { useWatchProgress } from "./player/use-watch-progress";
 
 interface MovieDetails {
   id: string;
@@ -89,16 +60,8 @@ export default function RealStreamingPlayer({
   movie,
   poster,
 }: RealStreamingPlayerProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const episodeListRef = useRef<HTMLDivElement>(null);
-
   const { user } = useAuth();
-  const {
-    addToWatchlist,
-    removeFromWatchlist,
-    isInWatchlist,
-    updateWatchProgress,
-  } = useFavorites();
+  const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useFavorites();
   const [inWatchlist, setInWatchlist] = useState(false);
 
   const { settings } = useSettings();
@@ -117,93 +80,33 @@ export default function RealStreamingPlayer({
   const contentType = movieId ? "movie" : "tv";
   const contentId = movieId || showId || "";
   const isTVShow = contentType === "tv";
+  const displayTitle = isTVShow && show ? show.name : movie ? movie.title : title;
 
-  // Persist source index if functional cookies allowed
+  // Track Watch Progress via custom hook
+  useWatchProgress({
+    contentId,
+    contentType,
+    displayTitle,
+    poster,
+    ...(isTVShow ? { season, episode } : {}),
+    movie,
+    show,
+    open,
+  });
+
+  // Persist source index
   useEffect(() => {
-    if (settings.preferences.functional) {
-      localStorage.setItem(
-        "preferred-server-index",
-        currentSourceIndex.toString(),
-      );
+    if (settings?.preferences?.functional) {
+      localStorage.setItem("preferred-server-index", currentSourceIndex.toString());
     }
-  }, [currentSourceIndex, settings.preferences.functional]);
+  }, [currentSourceIndex, settings?.preferences?.functional]);
 
-  // Check watchlist status
+  // Check watchlist
   useEffect(() => {
     if (contentId) {
       setInWatchlist(isInWatchlist(parseInt(contentId)));
     }
   }, [contentId, isInWatchlist, open]);
-
-  // Watch History Logic
-  const startTimeRef = useRef<number>(Date.now());
-
-  useEffect(() => {
-    if (!open || !contentId || !user) return;
-
-    startTimeRef.current = Date.now();
-
-    // Save initial progress record (0%) when video starts
-    const saveProgress = () => {
-      const elapsedSeconds = Math.floor(
-        (Date.now() - startTimeRef.current) / 1000,
-      );
-      const durationMinutes =
-        (isTVShow && show?.episode_run_time?.[0]) || movie?.runtime || 0;
-      const durationSeconds = durationMinutes * 60;
-
-      // Cap progress at 95% so it doesn't auto-complete if they leave it open
-      // If duration is 0 (unknown), we can't calculate percentage
-      const percentage =
-        durationSeconds > 0
-          ? Math.min(95, Math.floor((elapsedSeconds / durationSeconds) * 100))
-          : 0;
-
-      updateWatchProgress({
-        id: contentId,
-        title: displayTitle,
-        type: contentType,
-        poster_path: poster || null,
-        progress: percentage,
-        currentTime: elapsedSeconds,
-        duration: durationSeconds,
-        lastWatched: new Date().toISOString(),
-        seasonNumber: season,
-        episodeNumber: episode,
-      });
-    };
-
-    // Save immediately
-    saveProgress();
-
-    // Update timestamp every minute to keep "last watched" fresh
-    const interval = setInterval(() => {
-      saveProgress();
-    }, 60000);
-
-    return () => {
-      clearInterval(interval);
-      saveProgress();
-    };
-  }, [open, contentId, user, season, episode]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const episodesSlideNext = useCallback(() => {
-    if (episodeListRef.current) {
-      episodeListRef.current.scrollBy({
-        left: 200,
-        behavior: "smooth",
-      });
-    }
-  }, []);
-
-  const episodesSlidePrev = useCallback(() => {
-    if (episodeListRef.current) {
-      episodeListRef.current.scrollBy({
-        left: -200,
-        behavior: "smooth",
-      });
-    }
-  }, []);
 
   const loadStreamingSources = useCallback(async () => {
     setIsLoading(true);
@@ -220,7 +123,7 @@ export default function RealStreamingPlayer({
       );
       if (urls.length) {
         setStreamingUrls(urls);
-        setCurrentSourceIndex(0);
+        setCurrentSourceIndex((prev) => (prev >= urls.length ? 0 : prev));
       } else {
         setError("No streaming sources available for this content.");
       }
@@ -234,10 +137,7 @@ export default function RealStreamingPlayer({
   const fetchSeasonDetails = useCallback(async () => {
     if (!isTVShow || !showId || !season) return;
     try {
-      const seasonData = await getTVSeasonDetails(
-        showId.toString(),
-        season.toString(),
-      );
+      const seasonData = await getTVSeasonDetails(showId.toString(), season.toString());
       setEpisodes(seasonData.episodes || []);
     } catch {
       setEpisodes([]);
@@ -251,30 +151,13 @@ export default function RealStreamingPlayer({
     }
   }, [open, contentId, isTVShow, loadStreamingSources, fetchSeasonDetails]);
 
-  const handleIframeLoad = () => {
-    setIsLoading(false);
-    setError(null);
-  };
-
   const handleIframeError = () => {
-    // Failover logic
     if (currentSourceIndex < streamingUrls.length - 1) {
-      console.log(`Source ${currentSourceIndex} failed, switching to next...`);
       setCurrentSourceIndex((prev) => prev + 1);
       setIsLoading(true);
     } else {
       setIsLoading(false);
-      setError(
-        "All streaming sources failed. Please try again later or select a different server manually.",
-      );
-    }
-  };
-
-  const switchSource = () => {
-    if (streamingUrls.length > 1) {
-      setCurrentSourceIndex((prev) => (prev + 1) % streamingUrls.length);
-      setError(null);
-      setIsLoading(true);
+      setError("All streaming sources failed. Please try again later or select a different server manually.");
     }
   };
 
@@ -297,310 +180,70 @@ export default function RealStreamingPlayer({
     }
   };
 
-  const formatRuntime = (minutes: number | undefined) => {
-    if (!minutes) return "N/A";
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
-  };
-
-  const displayTitle =
-    isTVShow && show ? show.name : movie ? movie.title : title;
-  const displayOverview =
-    isTVShow && show
-      ? show.overview
-      : movie?.overview || "No overview available.";
-
-  const displayRuntime = formatRuntime(
-    (isTVShow && show?.episode_run_time?.[0]) || movie?.runtime,
-  );
-
-  const displayGenres =
-    ((isTVShow && show?.genres) || movie?.genres)
-      ?.map((g) => g.name)
-      .join(", ") || "N/A";
-  const displayFirstAirYear =
-    isTVShow && show?.first_air_date
-      ? new Date(show.first_air_date).getFullYear()
-      : movie?.release_date
-        ? new Date(movie.release_date).getFullYear()
-        : "N/A";
-
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-
   if (!open) return null;
+
+  const currentEpisodeDetails = episodes.find((ep) => ep.episode_number === episode);
+  const episodeOverview = isTVShow && currentEpisodeDetails?.overview ? currentEpisodeDetails.overview : null;
+  const generalOverview = isTVShow && show ? show.overview : movie?.overview || "No overview available.";
+  const displayRuntime = (isTVShow && show?.episode_run_time?.[0]) || movie?.runtime;
+  const displayGenres = ((isTVShow && show?.genres) || movie?.genres)?.map((g) => g.name).join(", ") || "N/A";
+  const displayFirstAirYear = isTVShow && show?.first_air_date
+    ? new Date(show.first_air_date).getFullYear()
+    : movie?.release_date
+      ? new Date(movie.release_date).getFullYear()
+      : "N/A";
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   return (
     <div className="fixed inset-0 z-50 w-full h-full overflow-y-auto bg-gray-950/95 backdrop-blur-sm text-white font-sans">
       <div className="flex flex-col items-center w-full max-w-6xl mx-auto py-8 px-4 space-y-8">
-        {/* Header with Controls */}
-        <div className="w-full flex justify-between items-center sticky top-0 bg-gray-950/80 backdrop-blur-md z-10 py-4 px-2 rounded-xl border border-white/5 shadow-2xl">
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={onClose}
-              variant="ghost"
-              className="text-white hover:bg-white/10"
-            >
-              <X className="w-5 h-5 mr-1" /> Close
-            </Button>
-            <div className="flex flex-col">
-              <h2 className="text-lg font-bold leading-tight line-clamp-1">
-                {displayTitle}
-              </h2>
-              {isTVShow && (
-                <span className="text-xs text-red-500 font-semibold">
-                  Season {season} • Episode {episode}
-                </span>
-              )}
-            </div>
-          </div>
+        <PlayerHeader
+          displayTitle={displayTitle}
+          isTVShow={isTVShow}
+          season={season}
+          episode={episode}
+          streamingUrls={streamingUrls}
+          currentSourceIndex={currentSourceIndex}
+          onSourceChange={(index) => {
+            setCurrentSourceIndex(index);
+            setIsLoading(true);
+            setError(null);
+          }}
+          onClose={onClose}
+        />
 
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 text-sm text-gray-400">
-              <span>Server:</span>
-            </div>
-            {streamingUrls.length > 1 && (
-              <div className="flex items-center gap-2">
-                <Select
-                  value={currentSourceIndex.toString()}
-                  onValueChange={(value) => {
-                    setCurrentSourceIndex(parseInt(value));
-                    setIsLoading(true);
-                    setError(null);
-                  }}
-                >
-                  <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white hidden sm:flex">
-                    <SelectValue placeholder="Select Server" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-950 border-gray-800 text-white">
-                    {streamingUrls.map((url, i) => {
-                      const src = streamingSources.find((s) =>
-                        url.startsWith(s.baseUrl),
-                      );
-                      return (
-                        <SelectItem key={i} value={i.toString()}>
-                          {src?.name || `Server ${i + 1}`}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+        <PlayerEmbed
+          isLoading={isLoading}
+          error={error}
+          currentUrl={streamingUrls[currentSourceIndex]}
+          iframeRef={null as any}
+          onIframeLoad={() => {
+            setIsLoading(false);
+            setError(null);
+          }}
+          onIframeError={handleIframeError}
+          onRetry={() => {
+            setError(null);
+            setIsLoading(true);
+            loadStreamingSources();
+          }}
+        />
 
-                {/* Mobile Server Toggle */}
-                <Button
-                  onClick={switchSource}
-                  variant="outline"
-                  size="icon"
-                  className="text-white bg-white/5 border-white/10 hover:bg-white/10 sm:hidden"
-                  title="Next Server"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Player */}
-        <div className="w-full aspect-video bg-black relative rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-          {isLoading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600 mb-4"></div>
-              <p className="text-gray-400 animate-pulse">
-                Connecting to server...
-              </p>
-            </div>
-          )}
-          {error && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-red-500 bg-black/90 z-20 p-6 text-center">
-              <AlertCircle className="w-12 h-12 mb-4" />
-              <p className="text-lg font-semibold mb-2">{error}</p>
-              <Button
-                onClick={() => {
-                  setError(null);
-                  setIsLoading(true);
-                  loadStreamingSources();
-                }}
-                variant="outline"
-                className="mt-4 border-red-500/50 text-red-500 hover:bg-red-500/10"
-              >
-                Retry Connection
-              </Button>
-            </div>
-          )}
-          {streamingUrls[currentSourceIndex] && (
-            <iframe
-              ref={iframeRef}
-              key={streamingUrls[currentSourceIndex]}
-              src={streamingUrls[currentSourceIndex]}
-              onLoad={handleIframeLoad}
-              onError={handleIframeError}
-              className="w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          )}
-        </div>
-
-        {/* Next/Previous Episode Buttons for current season */}
-        {isTVShow && (
-          <div className="flex flex-row w-full justify-between items-center bg-white/5 p-4 rounded-xl border border-white/5">
-            <Button
-              onClick={() => {
-                const i = episodes.findIndex(
-                  (ep) => ep.episode_number === episode,
-                );
-                const prev = episodes[i - 1];
-                if (prev) onEpisodeSelect?.(season, prev.episode_number);
-              }}
-              disabled={episode === 1}
-              variant="ghost"
-              className="text-white hover:bg-white/10"
-            >
-              <ChevronLeft className="h-5 w-5 mr-2" /> Previous Episode
-            </Button>
-
-            <div className="hidden sm:block text-sm text-gray-400">
-              Ep {episode} of {episodes.length}
-            </div>
-
-            <Button
-              onClick={() => {
-                const i = episodes.findIndex(
-                  (ep) => ep.episode_number === episode,
-                );
-                const next = episodes[i + 1];
-                if (next) onEpisodeSelect?.(season, next.episode_number);
-              }}
-              disabled={episode === episodes.length}
-              variant="ghost"
-              className="text-white hover:bg-white/10"
-            >
-              Next Episode <ChevronRight className="h-5 w-5 ml-2" />
-            </Button>
-          </div>
-        )}
-
-        {/* Episodes List */}
-        {isTVShow && (
-          <div className="w-full space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h3 className="text-xl font-bold">Episodes</h3>
-
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <Select
-                  value={season.toString()}
-                  onValueChange={(v) => onEpisodeSelect?.(parseInt(v), 1)}
-                >
-                  <SelectTrigger className="w-[140px] bg-white/5 border-white/10 text-white">
-                    <SelectValue placeholder={`Season ${season}`} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-900 border-gray-700 text-white">
-                    {Array.from(
-                      { length: show?.number_of_seasons || 1 },
-                      (_, i) => (
-                        <SelectItem key={i + 1} value={(i + 1).toString()}>
-                          Season {i + 1}
-                        </SelectItem>
-                      ),
-                    )}
-                  </SelectContent>
-                </Select>
-
-                <div className="flex items-center gap-1 ml-auto">
-                  <Button
-                    onClick={episodesSlidePrev}
-                    size="icon"
-                    variant="ghost"
-                    className="text-white hover:bg-white/10"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </Button>
-                  <Button
-                    onClick={episodesSlideNext}
-                    size="icon"
-                    variant="ghost"
-                    className="text-white hover:bg-white/10"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div
-              ref={episodeListRef}
-              className="flex overflow-x-auto gap-4 pb-4 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent"
-            >
-              {episodes.map((ep) => (
-                <div
-                  key={ep.episode_number}
-                  className={`relative w-64 flex-shrink-0 group cursor-pointer rounded-lg overflow-hidden border transition-all duration-300 ${
-                    ep.episode_number === episode
-                      ? "border-red-600 ring-2 ring-red-600/20"
-                      : "border-white/10 hover:border-white/30"
-                  }`}
-                  onClick={() => onEpisodeSelect?.(season, ep.episode_number)}
-                >
-                  <div className="relative aspect-video">
-                    {ep.still_path ? (
-                      <Image
-                        src={`https://image.tmdb.org/t/p/w500${ep.still_path}`}
-                        alt={ep.name || `Episode ${ep.episode_number}`}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        width={256}
-                        height={144}
-                      />
-                    ) : (
-                      <Image
-                        src={poster || placeholderImage}
-                        alt={ep.name || `Episode ${ep.episode_number}`}
-                        className="w-full h-full object-cover opacity-50"
-                        width={256}
-                        height={144}
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
-                    {ep.episode_number === episode && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                        <PlayCircle className="w-10 h-10 text-red-500 fill-current" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-3 bg-gray-900/90 h-full">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="text-xs font-semibold text-red-500">
-                        Episode {ep.episode_number}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {ep.runtime ? `${ep.runtime}m` : ""}
-                      </span>
-                    </div>
-                    <h4 className="text-sm font-medium line-clamp-1 text-gray-200 group-hover:text-white transition-colors">
-                      {ep.name || `Episode ${ep.episode_number}`}
-                    </h4>
-                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">
-                      {ep.overview}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <EpisodeSelector
+          isTVShow={isTVShow}
+          show={show}
+          episodes={episodes}
+          season={season}
+          episode={episode}
+          poster={poster}
+          onEpisodeSelect={onEpisodeSelect}
+        />
 
         {/* Movie/TV Info */}
         <div className="flex flex-col md:flex-row items-start gap-8 w-full bg-white/5 p-6 rounded-2xl border border-white/5">
           {poster && (
             <div className="flex-shrink-0 hidden md:block">
-              <Image
-                src={poster}
-                alt="Poster"
-                className="w-32 sm:w-48 rounded-lg shadow-2xl"
-                width={200}
-                height={300}
-              />
+              <Image src={poster} alt="Poster" className="w-32 sm:w-48 rounded-lg shadow-2xl" width={200} height={300} />
             </div>
           )}
           <div className="flex-1 w-full">
@@ -613,11 +256,7 @@ export default function RealStreamingPlayer({
                     onClick={toggleWatchlist}
                     className={`${inWatchlist ? "bg-red-600 text-white border-red-600 hover:bg-red-700" : "bg-white/5 text-white hover:bg-white/10"}`}
                   >
-                    {inWatchlist ? (
-                      <Check className="w-4 h-4 mr-2" />
-                    ) : (
-                      <Plus className="w-4 h-4 mr-2" />
-                    )}
+                    {inWatchlist ? <Check className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
                     {inWatchlist ? "Added" : "My List"}
                   </Button>
                 )}
@@ -626,84 +265,48 @@ export default function RealStreamingPlayer({
             </div>
 
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300 mb-6">
-              <Badge variant="outline" className="border-white/20 text-white">
-                {displayFirstAirYear}
-              </Badge>
+              <Badge variant="outline" className="border-white/20 text-white">{displayFirstAirYear}</Badge>
               <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
               <span>{displayGenres}</span>
               <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-              <span>{displayRuntime}</span>
-              {movie?.vote_average && (
+              <span>{displayRuntime ? `${Math.floor(displayRuntime / 60)}h ${displayRuntime % 60}m` : "N/A"}</span>
+              {(movie?.vote_average || show?.vote_average) && (
                 <>
                   <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
                   <div className="flex items-center text-yellow-400 bg-white/5 px-2 py-1 rounded-md border border-white/10">
                     <Star className="h-4 w-4 fill-current mr-1" />
                     <span className="text-sm font-medium">
-                      {(movie?.vote_average || show?.vote_average || 0).toFixed(
-                        1,
-                      )}
+                      {(movie?.vote_average || show?.vote_average || 0).toFixed(1)}
                     </span>
                   </div>
                 </>
               )}
             </div>
-            <p className="text-gray-300 leading-relaxed max-w-3xl">
-              {displayOverview}
-            </p>
+            <div className="flex flex-col gap-4 max-w-3xl">
+              {episodeOverview && (
+                <div>
+                  <h4 className="font-semibold text-white mb-1">Episode Overview</h4>
+                  <p className="text-gray-300 leading-relaxed">{episodeOverview}</p>
+                </div>
+              )}
+              <div>
+                {episodeOverview && <h4 className="font-semibold text-white mb-1">Show Overview</h4>}
+                <p className="text-gray-300 leading-relaxed">{generalOverview}</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Content Tabs */}
-        <div className="w-full pt-8 border-t border-white/10">
-          <Tabs defaultValue="recommendations" className="w-full">
-            <TabsList className="bg-white/5 border border-white/10 mb-6 overflow-x-auto flex lg:grid lg:grid-cols-3 scrollbar-none">
-              <TabsTrigger
-                value="recommendations"
-                className="text-white data-[state=active]:bg-red-600"
-              >
-                Recommendations
-              </TabsTrigger>
-              <TabsTrigger
-                value="reviews"
-                className="text-white data-[state=active]:bg-red-600"
-              >
-                Reviews
-              </TabsTrigger>
-              <TabsTrigger
-                value="discussion"
-                className="text-white data-[state=active]:bg-red-600"
-              >
-                Discussion
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="recommendations" className="mt-0">
-              {movieId && movie?.id && (
-                <MovieRecommendations currentMovieId={parseInt(movie.id)} />
-              )}
-              {isTVShow && showId && <TVRecommendations currentTvId={showId} />}
-            </TabsContent>
-
-            <TabsContent value="reviews" className="mt-0">
-              <UserReviews
-                mediaId={movieId || showId || ""}
-                mediaType={isTVShow ? "tv" : "movie"}
-                mediaTitle={displayTitle}
-                seasonNumber={isTVShow ? season : undefined}
-                episodeNumber={isTVShow ? episode : undefined}
-              />
-            </TabsContent>
-
-            <TabsContent value="discussion" className="mt-0">
-              <SocialFeed
-                mediaId={movieId || showId || ""}
-                mediaType={isTVShow ? "tv" : "movie"}
-                mediaTitle={displayTitle}
-                mediaPoster={movie?.poster_path || show?.poster_path || ""}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
+        <PlayerTabs
+          movieId={movieId}
+          showId={showId}
+          isTVShow={isTVShow}
+          movie={movie}
+          show={show}
+          season={season}
+          episode={episode}
+          displayTitle={displayTitle}
+        />
       </div>
     </div>
   );
