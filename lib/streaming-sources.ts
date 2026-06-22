@@ -42,20 +42,7 @@ export const streamingSources: StreamingSource[] = [
     supportsSubtitles: false,
     idType: "tmdb",
   },
-  {
-    id: "2embed",
-    name: "2Embed.cc",
-    baseUrl: "https://www.2embed.cc",
-    embedUrl: {
-      movie: "https://www.2embed.cc/embed/{id}",
-      tv: "https://www.2embed.cc/embed/{id}/{season}/{episode}",
-    },
-    isWorking: true,
-    priority: 3,
-    supportsQuality: true,
-    supportsSubtitles: true,
-    idType: "tmdb",
-  },
+
   {
     id: "superembed",
     name: "SuperEmbed",

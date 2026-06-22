@@ -59,8 +59,8 @@ export function PlayerTabs({
         </TabsList>
 
         <TabsContent value="recommendations" className="mt-0">
-          {movieId && movie?.id && (
-            <MovieRecommendations currentMovieId={parseInt(movie.id)} />
+          {movieId && (
+            <MovieRecommendations currentMovieId={parseInt(movieId)} />
           )}
           {isTVShow && showId && <TVRecommendations currentTvId={showId} />}
         </TabsContent>

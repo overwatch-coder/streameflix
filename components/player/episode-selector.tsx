@@ -142,12 +142,21 @@ export function EpisodeSelector({
         {episodes.map((ep) => (
           <div
             key={ep.episode_number}
+            role="button"
+            tabIndex={0}
             className={`relative w-64 flex-shrink-0 group cursor-pointer rounded-lg overflow-hidden border transition-all duration-300 ${
               ep.episode_number === episode
                 ? "border-red-600 ring-2 ring-red-600/20"
                 : "border-white/10 hover:border-white/30"
             }`}
             onClick={() => onEpisodeSelect?.(season, ep.episode_number)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onEpisodeSelect?.(season, ep.episode_number);
+              }
+            }}
+            aria-label={`Select Episode ${ep.episode_number}`}
           >
             <div className="relative aspect-video">
               {ep.still_path ? (

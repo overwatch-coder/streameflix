@@ -88,8 +88,7 @@ export default function RealStreamingPlayer({
     contentType,
     displayTitle,
     poster,
-    season,
-    episode,
+    ...(isTVShow ? { season, episode } : {}),
     movie,
     show,
     open,
@@ -124,7 +123,7 @@ export default function RealStreamingPlayer({
       );
       if (urls.length) {
         setStreamingUrls(urls);
-        setCurrentSourceIndex(0);
+        setCurrentSourceIndex((prev) => (prev >= urls.length ? 0 : prev));
       } else {
         setError("No streaming sources available for this content.");
       }

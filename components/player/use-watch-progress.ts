@@ -84,5 +84,6 @@ export function useWatchProgress({
       clearInterval(interval);
       saveProgress();
     };
-  }, [open, contentId, user, season, episode, updateWatchProgress, contentType, displayTitle, poster, show, movie]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, contentId, user, season, episode]);
 }
