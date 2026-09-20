@@ -9,7 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { streamingSources } from "@/lib/streaming-sources";
+import {
+  ResolvedStreamingSource,
+  streamingSources,
+} from "@/lib/streaming-sources";
 
 interface PlayerHeaderProps {
   displayTitle: string;
@@ -17,6 +20,7 @@ interface PlayerHeaderProps {
   season?: number;
   episode?: number;
   streamingUrls: string[];
+  resolvedSources?: ResolvedStreamingSource[];
   currentSourceIndex: number;
   onSourceChange: (index: number) => void;
   onClose: () => void;
@@ -28,6 +32,7 @@ export function PlayerHeader({
   season,
   episode,
   streamingUrls,
+  resolvedSources,
   currentSourceIndex,
   onSourceChange,
   onClose,
@@ -69,12 +74,15 @@ export function PlayerHeader({
               </SelectTrigger>
               <SelectContent className="bg-gray-950 border-gray-800 text-white">
                 {streamingUrls.map((url, i) => {
-                  const src = streamingSources.find((s) =>
-                    url.startsWith(s.baseUrl),
-                  );
+                  const resolved = resolvedSources?.[i];
+                  const src =
+                    resolved?.source ||
+                    streamingSources.find((s) => url.startsWith(s.baseUrl));
+                  const displayName =
+                    resolved?.name || src?.name || `Server ${i + 1}`;
                   return (
                     <SelectItem key={i} value={i.toString()}>
-                      {src?.name || `Server ${i + 1}`}
+                      {displayName}
                     </SelectItem>
                   );
                 })}
@@ -83,7 +91,9 @@ export function PlayerHeader({
 
             {/* Mobile Server Toggle */}
             <Button
-              onClick={() => onSourceChange((currentSourceIndex + 1) % streamingUrls.length)}
+              onClick={() =>
+                onSourceChange((currentSourceIndex + 1) % streamingUrls.length)
+              }
               variant="outline"
               size="icon"
               className="text-white bg-white/5 border-white/10 hover:bg-white/10 sm:hidden"

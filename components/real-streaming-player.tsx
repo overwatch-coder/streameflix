@@ -8,7 +8,10 @@ import { Button } from "@/components/ui/button";
 import { useSettings } from "@/contexts/settings-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useAuth } from "@/contexts/auth-context";
-import { getStreamingUrls } from "@/lib/streaming-sources";
+import {
+  getResolvedStreamingSources,
+  ResolvedStreamingSource,
+} from "@/lib/streaming-sources";
 import { getTVSeasonDetails } from "@/lib/tmdb";
 import { Episode, TVDetails } from "@/types/tv";
 import { ShareModal } from "@/components/share-modal";
@@ -65,7 +68,11 @@ export default function RealStreamingPlayer({
   const [inWatchlist, setInWatchlist] = useState(false);
 
   const { settings } = useSettings();
-  const [streamingUrls, setStreamingUrls] = useState<string[]>([]);
+  const isFunctionalPreference = Boolean(settings?.preferences?.functional);
+  const [resolvedSources, setResolvedSources] = useState<
+    ResolvedStreamingSource[]
+  >([]);
+  const streamingUrls = resolvedSources.map((s) => s.url);
   const [currentSourceIndex, setCurrentSourceIndex] = useState(() => {
     if (typeof window !== "undefined" && settings?.preferences?.functional) {
       const saved = localStorage.getItem("preferred-server-index");
@@ -80,7 +87,8 @@ export default function RealStreamingPlayer({
   const contentType = movieId ? "movie" : "tv";
   const contentId = movieId || showId || "";
   const isTVShow = contentType === "tv";
-  const displayTitle = isTVShow && show ? show.name : movie ? movie.title : title;
+  const displayTitle =
+    isTVShow && show ? show.name : movie ? movie.title : title;
 
   // Track Watch Progress via custom hook
   useWatchProgress({
@@ -94,12 +102,21 @@ export default function RealStreamingPlayer({
     open,
   });
 
-  // Persist source index
+  // Persist source preference
   useEffect(() => {
-    if (settings?.preferences?.functional) {
-      localStorage.setItem("preferred-server-index", currentSourceIndex.toString());
+    if (isFunctionalPreference) {
+      localStorage.setItem(
+        "preferred-server-index",
+        currentSourceIndex.toString(),
+      );
+      if (resolvedSources[currentSourceIndex]) {
+        localStorage.setItem(
+          "preferred-server-id",
+          resolvedSources[currentSourceIndex].id,
+        );
+      }
     }
-  }, [currentSourceIndex, settings?.preferences?.functional]);
+  }, [currentSourceIndex, resolvedSources, isFunctionalPreference]);
 
   // Check watchlist
   useEffect(() => {
@@ -111,9 +128,9 @@ export default function RealStreamingPlayer({
   const loadStreamingSources = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    setStreamingUrls([]);
+    setResolvedSources([]);
     try {
-      const urls = await getStreamingUrls(
+      const sources = getResolvedStreamingSources(
         contentId,
         contentType,
         season,
@@ -121,9 +138,19 @@ export default function RealStreamingPlayer({
         imdbId,
         "individual",
       );
-      if (urls.length) {
-        setStreamingUrls(urls);
-        setCurrentSourceIndex((prev) => (prev >= urls.length ? 0 : prev));
+      if (sources.length) {
+        setResolvedSources(sources);
+        if (typeof window !== "undefined" && isFunctionalPreference) {
+          const savedId = localStorage.getItem("preferred-server-id");
+          if (savedId) {
+            const foundIdx = sources.findIndex((s) => s.id === savedId);
+            if (foundIdx !== -1) {
+              setCurrentSourceIndex(foundIdx);
+              return;
+            }
+          }
+        }
+        setCurrentSourceIndex((prev) => (prev >= sources.length ? 0 : prev));
       } else {
         setError("No streaming sources available for this content.");
       }
@@ -132,12 +159,15 @@ export default function RealStreamingPlayer({
     } finally {
       setIsLoading(false);
     }
-  }, [contentId, contentType, episode, imdbId, season]);
+  }, [contentId, contentType, episode, imdbId, season, isFunctionalPreference]);
 
   const fetchSeasonDetails = useCallback(async () => {
     if (!isTVShow || !showId || !season) return;
     try {
-      const seasonData = await getTVSeasonDetails(showId.toString(), season.toString());
+      const seasonData = await getTVSeasonDetails(
+        showId.toString(),
+        season.toString(),
+      );
       setEpisodes(seasonData.episodes || []);
     } catch {
       setEpisodes([]);
@@ -157,7 +187,9 @@ export default function RealStreamingPlayer({
       setIsLoading(true);
     } else {
       setIsLoading(false);
-      setError("All streaming sources failed. Please try again later or select a different server manually.");
+      setError(
+        "All streaming sources failed. Please try again later or select a different server manually.",
+      );
     }
   };
 
@@ -182,16 +214,29 @@ export default function RealStreamingPlayer({
 
   if (!open) return null;
 
-  const currentEpisodeDetails = episodes.find((ep) => ep.episode_number === episode);
-  const episodeOverview = isTVShow && currentEpisodeDetails?.overview ? currentEpisodeDetails.overview : null;
-  const generalOverview = isTVShow && show ? show.overview : movie?.overview || "No overview available.";
-  const displayRuntime = (isTVShow && show?.episode_run_time?.[0]) || movie?.runtime;
-  const displayGenres = ((isTVShow && show?.genres) || movie?.genres)?.map((g) => g.name).join(", ") || "N/A";
-  const displayFirstAirYear = isTVShow && show?.first_air_date
-    ? new Date(show.first_air_date).getFullYear()
-    : movie?.release_date
-      ? new Date(movie.release_date).getFullYear()
-      : "N/A";
+  const currentEpisodeDetails = episodes.find(
+    (ep) => ep.episode_number === episode,
+  );
+  const episodeOverview =
+    isTVShow && currentEpisodeDetails?.overview
+      ? currentEpisodeDetails.overview
+      : null;
+  const generalOverview =
+    isTVShow && show
+      ? show.overview
+      : movie?.overview || "No overview available.";
+  const displayRuntime =
+    (isTVShow && show?.episode_run_time?.[0]) || movie?.runtime;
+  const displayGenres =
+    ((isTVShow && show?.genres) || movie?.genres)
+      ?.map((g) => g.name)
+      .join(", ") || "N/A";
+  const displayFirstAirYear =
+    isTVShow && show?.first_air_date
+      ? new Date(show.first_air_date).getFullYear()
+      : movie?.release_date
+        ? new Date(movie.release_date).getFullYear()
+        : "N/A";
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   return (
@@ -203,6 +248,7 @@ export default function RealStreamingPlayer({
           season={season}
           episode={episode}
           streamingUrls={streamingUrls}
+          resolvedSources={resolvedSources}
           currentSourceIndex={currentSourceIndex}
           onSourceChange={(index) => {
             setCurrentSourceIndex(index);
@@ -216,7 +262,6 @@ export default function RealStreamingPlayer({
           isLoading={isLoading}
           error={error}
           currentUrl={streamingUrls[currentSourceIndex]}
-          iframeRef={null as any}
           onIframeLoad={() => {
             setIsLoading(false);
             setError(null);
@@ -242,8 +287,14 @@ export default function RealStreamingPlayer({
         {/* Movie/TV Info */}
         <div className="flex flex-col md:flex-row items-start gap-8 w-full bg-white/5 p-6 rounded-2xl border border-white/5">
           {poster && (
-            <div className="flex-shrink-0 hidden md:block">
-              <Image src={poster} alt="Poster" className="w-32 sm:w-48 rounded-lg shadow-2xl" width={200} height={300} />
+            <div className="shrink-0 hidden md:block">
+              <Image
+                src={poster}
+                alt="Poster"
+                className="w-32 sm:w-48 rounded-lg shadow-2xl"
+                width={200}
+                height={300}
+              />
             </div>
           )}
           <div className="flex-1 w-full">
@@ -256,7 +307,11 @@ export default function RealStreamingPlayer({
                     onClick={toggleWatchlist}
                     className={`${inWatchlist ? "bg-red-600 text-white border-red-600 hover:bg-red-700" : "bg-white/5 text-white hover:bg-white/10"}`}
                   >
-                    {inWatchlist ? <Check className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                    {inWatchlist ? (
+                      <Check className="w-4 h-4 mr-2" />
+                    ) : (
+                      <Plus className="w-4 h-4 mr-2" />
+                    )}
                     {inWatchlist ? "Added" : "My List"}
                   </Button>
                 )}
@@ -265,18 +320,26 @@ export default function RealStreamingPlayer({
             </div>
 
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300 mb-6">
-              <Badge variant="outline" className="border-white/20 text-white">{displayFirstAirYear}</Badge>
+              <Badge variant="outline" className="border-white/20 text-white">
+                {displayFirstAirYear}
+              </Badge>
               <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
               <span>{displayGenres}</span>
               <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-              <span>{displayRuntime ? `${Math.floor(displayRuntime / 60)}h ${displayRuntime % 60}m` : "N/A"}</span>
+              <span>
+                {displayRuntime
+                  ? `${Math.floor(displayRuntime / 60)}h ${displayRuntime % 60}m`
+                  : "N/A"}
+              </span>
               {(movie?.vote_average || show?.vote_average) && (
                 <>
                   <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
                   <div className="flex items-center text-yellow-400 bg-white/5 px-2 py-1 rounded-md border border-white/10">
                     <Star className="h-4 w-4 fill-current mr-1" />
                     <span className="text-sm font-medium">
-                      {(movie?.vote_average || show?.vote_average || 0).toFixed(1)}
+                      {(movie?.vote_average || show?.vote_average || 0).toFixed(
+                        1,
+                      )}
                     </span>
                   </div>
                 </>
@@ -285,13 +348,23 @@ export default function RealStreamingPlayer({
             <div className="flex flex-col gap-4 max-w-3xl">
               {episodeOverview && (
                 <div>
-                  <h4 className="font-semibold text-white mb-1">Episode Overview</h4>
-                  <p className="text-gray-300 leading-relaxed">{episodeOverview}</p>
+                  <h4 className="font-semibold text-white mb-1">
+                    Episode Overview
+                  </h4>
+                  <p className="text-gray-300 leading-relaxed">
+                    {episodeOverview}
+                  </p>
                 </div>
               )}
               <div>
-                {episodeOverview && <h4 className="font-semibold text-white mb-1">Show Overview</h4>}
-                <p className="text-gray-300 leading-relaxed">{generalOverview}</p>
+                {episodeOverview && (
+                  <h4 className="font-semibold text-white mb-1">
+                    Show Overview
+                  </h4>
+                )}
+                <p className="text-gray-300 leading-relaxed">
+                  {generalOverview}
+                </p>
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -13,6 +14,11 @@ import { useAuth } from "@/contexts/auth-context";
 export default function Footer() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -211,6 +217,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
               © 2025 - {new Date().getFullYear()} StreameFlix. All rights reserved.
+              © 2025 - {currentYear ?? 2026} StreameFlix. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link

@@ -7,7 +7,7 @@ interface PlayerEmbedProps {
   isLoading: boolean;
   error: string | null;
   currentUrl?: string;
-  iframeRef: React.RefObject<HTMLIFrameElement | null>;
+  iframeRef?: React.RefObject<HTMLIFrameElement | null>;
   onIframeLoad: () => void;
   onIframeError: () => void;
   onRetry: () => void;
@@ -53,7 +53,7 @@ export function PlayerEmbed({
           className="w-full h-full border-0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
-          sandbox="allow-scripts allow-same-origin allow-presentation"
+          referrerPolicy="origin"
         />
       )}
     </div>

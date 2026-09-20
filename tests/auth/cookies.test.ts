@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sessionCookieOptions } from "./cookies";
+import { sessionCookieOptions } from "../../lib/auth/cookies";
 
 describe("session cookie options", () => {
   it("does not mark local HTTP cookies as secure", () => {

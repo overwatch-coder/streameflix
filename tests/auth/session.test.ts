@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createSessionToken, verifySessionToken } from "./session";
+import { createSessionToken, verifySessionToken } from "../../lib/auth/session";
 
 describe("session helpers", () => {
   it("round-trips the user id and email through a signed token", async () => {
