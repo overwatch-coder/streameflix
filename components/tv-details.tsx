@@ -111,20 +111,19 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
             <div className="lg:col-span-1 flex justify-center lg:block">
               <div className="sticky top-24 w-48 sm:w-64 lg:w-full max-w-[280px] lg:max-w-none">
                 <div className="aspect-2/3 relative rounded-lg overflow-hidden shadow-2xl">
-                  <div className="aspect-2/3 relative rounded-lg overflow-hidden shadow-2xl">
-                    <Image
-                      src={posterUrl || "/placeholder.svg"}
-                      alt={show.name}
-                      fill
-                      className="object-cover"
-                      priority
-                    />
-                  </div>
+                  <Image
+                    src={posterUrl || "/placeholder.svg"}
+                    alt={show.name}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Show Info */}
-              <div className="lg:col-span-2 space-y-6 text-center lg:text-left">
+            {/* Show Info */}
+            <div className="lg:col-span-2 space-y-6 text-center lg:text-left">
                 <div>
                   <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
                     {show.name}
@@ -211,40 +210,40 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                 </div>
 
                 <Tabs defaultValue="overview" className="w-full">
-                  <TabsList className="flex overflow-x-auto lg:grid w-full lg:grid-cols-6 bg-gray-800 scrollbar-none rounded-lg p-1">
+                  <TabsList className="flex overflow-x-auto lg:grid w-full lg:grid-cols-6 bg-gray-800/90 backdrop-blur-sm scrollbar-none rounded-xl p-1 gap-1 border border-white/5">
                     <TabsTrigger
                       value="overview"
-                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                      className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                     >
                       Overview
                     </TabsTrigger>
                     <TabsTrigger
                       value="episodes"
-                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                      className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                     >
                       Episodes
                     </TabsTrigger>
                     <TabsTrigger
                       value="cast"
-                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                      className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                     >
                       Cast
                     </TabsTrigger>
                     <TabsTrigger
                       value="trailer"
-                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                      className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                     >
                       Trailer
                     </TabsTrigger>
                     <TabsTrigger
                       value="discussion"
-                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                      className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                     >
                       Discussion
                     </TabsTrigger>
                     <TabsTrigger
                       value="reviews"
-                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                      className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                     >
                       Reviews
                     </TabsTrigger>
@@ -403,7 +402,6 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
               </div>
             </div>
           </div>
-        </div>
 
         {/* Streaming Player */}
         {showPlayer && (

@@ -420,6 +420,17 @@ export default function RealStreamingPlayer({
             setIsLoading(true);
             loadStreamingSources();
           }}
+          onSwitchServer={
+            streamingUrls.length > 1
+              ? () => {
+                  setCurrentSourceIndex(
+                    (currentSourceIndex + 1) % streamingUrls.length,
+                  );
+                  setIsLoading(true);
+                  setError(null);
+                }
+              : undefined
+          }
         >
           {upNextData && (
             <UpNextOverlay

@@ -95,27 +95,27 @@ export function PlayerHeader({
             onClick={onNextEpisode}
             variant="outline"
             size="sm"
-            className="hidden md:flex items-center gap-1 text-xs text-white bg-white/5 border-white/10 hover:bg-white/10 hover:text-red-400 h-8"
-            title="Next Episode"
+            className="flex items-center gap-1 text-[11px] sm:text-xs text-white bg-white/5 border-white/10 hover:bg-white/10 hover:text-red-400 h-7 sm:h-8 px-2 sm:px-2.5"
+            aria-label="Next Episode"
           >
-            <span>Next Ep</span>
-            <SkipForward className="h-3.5 w-3.5" />
+            <span className="hidden xs:inline sm:inline">Next Ep</span>
+            <SkipForward className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           </Button>
         )}
 
-        <div className="hidden lg:flex items-center gap-2 text-sm text-gray-400">
+        <div className="hidden xl:flex items-center gap-2 text-sm text-gray-400">
           <span>Server:</span>
         </div>
         {streamingUrls.length > 1 && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Select
               value={currentSourceIndex.toString()}
               onValueChange={(value) => onSourceChange(parseInt(value))}
             >
-              <SelectTrigger className="w-[140px] sm:w-[180px] bg-white/5 border-white/10 text-white hidden sm:flex h-8 sm:h-9 text-xs sm:text-sm">
-                <SelectValue placeholder="Select Server" />
+              <SelectTrigger className="w-[85px] xs:w-[110px] sm:w-[160px] bg-white/5 border-white/10 text-white flex h-7 sm:h-8 px-2 text-[11px] sm:text-xs truncate">
+                <SelectValue placeholder="Server" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-950 border-gray-800 text-white">
+              <SelectContent className="bg-gray-950 border-gray-800 text-white max-h-[300px]">
                 {streamingUrls.map((url, i) => {
                   const resolved = resolvedSources?.[i];
                   const src =
@@ -124,26 +124,13 @@ export function PlayerHeader({
                   const displayName =
                     resolved?.name || src?.name || `Server ${i + 1}`;
                   return (
-                    <SelectItem key={i} value={i.toString()}>
+                    <SelectItem key={i} value={i.toString()} className="text-xs sm:text-sm">
                       {displayName}
                     </SelectItem>
                   );
                 })}
               </SelectContent>
             </Select>
-
-            {/* Mobile Server Toggle */}
-            <Button
-              onClick={() =>
-                onSourceChange((currentSourceIndex + 1) % streamingUrls.length)
-              }
-              variant="outline"
-              size="icon"
-              className="text-white bg-white/5 border-white/10 hover:bg-white/10 sm:hidden h-8 w-8"
-              title="Next Server"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-            </Button>
           </div>
         )}
       </div>

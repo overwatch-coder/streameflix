@@ -338,40 +338,40 @@ export default function MovieDetails({
       {/* Content Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 lg:py-12">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex overflow-x-auto lg:grid w-full lg:grid-cols-6 bg-gray-800 scrollbar-none rounded-none sm:rounded-md">
+          <TabsList className="flex overflow-x-auto lg:grid w-full lg:grid-cols-6 bg-gray-800/90 backdrop-blur-sm scrollbar-none rounded-xl p-1 gap-1 border border-white/5">
             <TabsTrigger
               value="overview"
-              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
+              className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger
               value="cast"
-              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
+              className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
             >
               Cast
             </TabsTrigger>
             <TabsTrigger
               value="trailer"
-              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
+              className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
             >
               Trailer
             </TabsTrigger>
             <TabsTrigger
               value="reviews"
-              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
+              className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
             >
               Reviews
             </TabsTrigger>
             <TabsTrigger
               value="discussion"
-              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
+              className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
             >
               Discussion
             </TabsTrigger>
             <TabsTrigger
               value="recommendations"
-              className="data-[state=active]:bg-gray-700 text-xs sm:text-sm"
+              className="shrink-0 px-3 sm:px-4 py-1.5 text-white data-[state=active]:bg-red-600 rounded-lg text-xs sm:text-sm font-medium transition-colors"
             >
               Similar
             </TabsTrigger>

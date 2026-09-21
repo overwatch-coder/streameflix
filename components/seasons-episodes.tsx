@@ -79,8 +79,15 @@ export default function SeasonsEpisodes({
   return (
     <div className="space-y-6">
       {/* Season Selector */}
-      <div className="flex items-center gap-4">
-        <h3 className="text-xl font-bold text-white">Episodes</h3>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-900/60 p-3 sm:p-4 rounded-xl border border-white/5">
+        <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <span>Episodes</span>
+          {episodes.length > 0 && (
+            <span className="text-xs font-normal text-gray-400">
+              ({episodes.length} episodes)
+            </span>
+          )}
+        </h3>
         <Select
           value={selectedSeason.toString()}
           onValueChange={(value) => {
@@ -90,7 +97,7 @@ export default function SeasonsEpisodes({
             }
           }}
         >
-          <SelectTrigger className="w-48 bg-gray-800 border-gray-700 text-white">
+          <SelectTrigger className="w-full sm:w-48 bg-gray-800 border-gray-700 text-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-gray-800 border-gray-700">
@@ -112,19 +119,17 @@ export default function SeasonsEpisodes({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {episodes.map((episode) => (
             <Card
               key={episode.id}
-              className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors"
+              className="bg-gray-850 border-gray-700/60 hover:bg-gray-800 hover:border-gray-600 transition-all overflow-hidden cursor-pointer"
+              onClick={() => handleEpisodePlay(episode.episode_number)}
             >
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col xs:flex-row gap-3 sm:gap-4">
-                  {/* Episode Image */}
-                  <div
-                    className="relative w-full xs:w-28 sm:w-32 h-36 xs:h-20 rounded-lg overflow-hidden bg-gray-700 shrink-0 cursor-pointer group"
-                    onClick={() => handleEpisodePlay(episode.episode_number)}
-                  >
+              <CardContent className="p-2.5 sm:p-4">
+                <div className="flex flex-row gap-3 sm:gap-4 items-start">
+                  {/* Episode Thumbnail */}
+                  <div className="relative w-28 sm:w-40 md:w-48 aspect-video rounded-lg overflow-hidden bg-gray-800 shrink-0 group">
                     {episode.still_path ? (
                       <Image
                         src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
@@ -133,27 +138,27 @@ export default function SeasonsEpisodes({
                         className="object-cover group-hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Play className="h-8 w-8 text-gray-500" />
+                      <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                        <Play className="h-6 w-6 sm:h-8 sm:w-8 text-gray-500" />
                       </div>
                     )}
 
                     {/* Play Button Overlay */}
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-70 xs:opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="bg-red-600 rounded-full p-2 text-white shadow">
-                        <Play className="h-4 w-4 fill-current" />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="bg-red-600 rounded-full p-1.5 sm:p-2 text-white shadow-lg">
+                        <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-current" />
                       </div>
                     </div>
                   </div>
 
                   {/* Episode Info */}
-                  <div className="flex-1 min-w-0 space-y-1.5">
+                  <div className="flex-1 min-w-0 space-y-1 sm:space-y-1.5">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <h4 className="text-white font-semibold text-sm sm:text-base line-clamp-1">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-white font-semibold text-xs sm:text-base line-clamp-1 leading-tight">
                           {episode.episode_number}. {episode.name}
                         </h4>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 mt-1">
+                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] sm:text-xs text-gray-400 mt-1">
                           {episode.air_date && (
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3 shrink-0" />
@@ -167,11 +172,11 @@ export default function SeasonsEpisodes({
                           {episode.runtime && (
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3 shrink-0" />
-                              <span>{episode.runtime}min</span>
+                              <span>{episode.runtime}m</span>
                             </div>
                           )}
                           {episode.vote_average > 0 && (
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 text-yellow-400">
                               <span>
                                 ⭐ {(episode.vote_average || 0).toFixed(1)}
                               </span>
@@ -182,18 +187,19 @@ export default function SeasonsEpisodes({
 
                       <Button
                         size="sm"
-                        className="bg-red-600 hover:bg-red-700 shrink-0 text-xs px-3 h-8"
-                        onClick={() =>
-                          handleEpisodePlay(episode.episode_number)
-                        }
+                        className="bg-red-600 hover:bg-red-700 shrink-0 text-xs px-2.5 sm:px-3 h-7 sm:h-8"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEpisodePlay(episode.episode_number);
+                        }}
                       >
-                        <Play className="h-3.5 w-3.5 fill-current mr-1" />
-                        Watch
+                        <Play className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current sm:mr-1" />
+                        <span className="hidden sm:inline">Watch</span>
                       </Button>
                     </div>
 
                     {episode.overview && (
-                      <p className="text-gray-300 text-xs sm:text-sm line-clamp-2">
+                      <p className="text-gray-300 text-[11px] sm:text-xs md:text-sm line-clamp-2 leading-relaxed">
                         {episode.overview}
                       </p>
                     )}

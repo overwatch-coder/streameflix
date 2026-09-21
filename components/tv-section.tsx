@@ -60,7 +60,7 @@ export default function TVSection({ title, shows, loading }: TVSectionProps) {
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="flex-none w-[150px] xs:w-[165px] sm:w-[190px] md:w-[210px]"
+              className="flex-none w-[calc((100vw-3.25rem)/2)] min-w-[140px] max-w-[195px] sm:w-[190px] sm:max-w-none md:w-[210px]"
             >
               <MovieCardSkeleton />
             </div>
@@ -115,7 +115,7 @@ export default function TVSection({ title, shows, loading }: TVSectionProps) {
           {shows.map((show) => (
             <div
               key={show.id}
-              className="flex-none w-[150px] xs:w-[165px] sm:w-[190px] md:w-[210px] select-none"
+              className="flex-none w-[calc((100vw-3.25rem)/2)] min-w-[140px] max-w-[195px] sm:w-[190px] sm:max-w-none md:w-[210px] select-none"
             >
               <TVCard show={show} />
             </div>
