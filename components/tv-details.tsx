@@ -98,8 +98,8 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${backdropUrl})` }}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-r from-black via-black/80 to-black/40" />
+          <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
         </div>
 
         {/* Content */}
@@ -108,7 +108,7 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
             {/* Poster */}
             <div className="lg:col-span-1 flex justify-center lg:block">
               <div className="sticky top-24 w-48 sm:w-64 lg:w-full max-w-[280px] lg:max-w-none">
-                <div className="aspect-[2/3] relative rounded-lg overflow-hidden shadow-2xl">
+                <div className="aspect-2/3 relative rounded-lg overflow-hidden shadow-2xl">
                   <Image
                     src={posterUrl || "/placeholder.svg"}
                     alt={show.name}

@@ -122,7 +122,7 @@ export default function SeasonsEpisodes({
                 <div className="flex flex-col xs:flex-row gap-3 sm:gap-4">
                   {/* Episode Image */}
                   <div
-                    className="relative w-full xs:w-28 sm:w-32 h-36 xs:h-20 rounded-lg overflow-hidden bg-gray-700 flex-shrink-0 cursor-pointer group"
+                    className="relative w-full xs:w-28 sm:w-32 h-36 xs:h-20 rounded-lg overflow-hidden bg-gray-700 shrink-0 cursor-pointer group"
                     onClick={() => handleEpisodePlay(episode.episode_number)}
                   >
                     {episode.still_path ? (
