@@ -47,11 +47,11 @@ describe("streaming-sources", () => {
     const vidsrcUrl = getStreamingUrl(movieId, "vidsrc.to");
     expect(vidsrcUrl).toBe("https://vidsrc.to/embed/movie/454639");
 
-    const videasyUrl = getStreamingUrl(movieId, "videasy");
-    expect(videasyUrl).toBe("https://player.videasy.to/movie/454639");
+    const autoembedUrl = getStreamingUrl(movieId, "autoembed");
+    expect(autoembedUrl).toBe("https://autoembed.co/movie/tmdb/454639");
 
-    const embedUrl = getStreamingUrl(movieId, "2embed");
-    expect(embedUrl).toBe("https://www.2embed.cc/embed/454639");
+    const multiembedUrl = getStreamingUrl(movieId, "multiembed");
+    expect(multiembedUrl).toBe("https://multiembed.mov/?video_id=454639&tmdb=1");
   });
 
   it("generates correct TV streaming URLs with season and episode numbers", () => {
@@ -72,11 +72,23 @@ describe("streaming-sources", () => {
     const vidsrcUrl = getTVStreamingUrl(showId, season, episode, "vidsrc.to");
     expect(vidsrcUrl).toBe("https://vidsrc.to/embed/tv/1399/2/5");
 
-    const videasyUrl = getTVStreamingUrl(showId, season, episode, "videasy");
-    expect(videasyUrl).toBe("https://player.videasy.to/tv/1399/2/5");
+    const autoembedUrl = getTVStreamingUrl(
+      showId,
+      season,
+      episode,
+      "autoembed",
+    );
+    expect(autoembedUrl).toBe("https://autoembed.co/tv/tmdb/1399-2-5");
 
-    const embedUrl = getTVStreamingUrl(showId, season, episode, "2embed");
-    expect(embedUrl).toBe("https://www.2embed.cc/embedtv/1399&s=2&e=5");
+    const multiembedUrl = getTVStreamingUrl(
+      showId,
+      season,
+      episode,
+      "multiembed",
+    );
+    expect(multiembedUrl).toBe(
+      "https://multiembed.mov/?video_id=1399&tmdb=1&s=2&e=5",
+    );
   });
 
   it("returns resolved streaming sources in priority order", () => {
@@ -87,7 +99,7 @@ describe("streaming-sources", () => {
     expect(resolved[0].name).toBe("VidLink (Fast)");
     expect(resolved[0].url).toContain("454639");
     expect(resolved[1].id).toBe("vidsrc.to");
-    expect(resolved[2].id).toBe("videasy");
+    expect(resolved[2].id).toBe("autoembed");
 
     // Verify ordering
     for (let i = 0; i < resolved.length - 1; i++) {
