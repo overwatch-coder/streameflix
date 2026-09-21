@@ -48,6 +48,11 @@ describe("autoplay unit tests", () => {
       expect(next).toBeNull();
     });
 
+    it("returns optimistic next episode when episodesCount is 0 or loading", () => {
+      const next = getNextEpisode(1, 1, 0, 3);
+      expect(next).toEqual({ season: 1, episode: 2 });
+    });
+
     it("returns null for a mini-series with only 1 season on the last episode", () => {
       const next = getNextEpisode(1, 6, 6, 1);
       expect(next).toBeNull();
@@ -143,11 +148,41 @@ describe("autoplay unit tests", () => {
       expect(isVideoEndedMessage({ event: "onStateChange", info: 0 })).toBe(true);
     });
 
+    it("detects video completion when currentTime is within 3s of duration", () => {
+      expect(
+        isVideoEndedMessage({
+          event: "timeupdate",
+          currentTime: 1498,
+          duration: 1500,
+        }),
+      ).toBe(true);
+
+      expect(
+        isVideoEndedMessage({
+          type: "PLAYER_EVENT",
+          data: { time: 1499, duration: 1500 },
+        }),
+      ).toBe(true);
+    });
+
+    it("detects video completion when progress reaches >= 98%", () => {
+      expect(isVideoEndedMessage({ progress: 0.99 })).toBe(true);
+      expect(isVideoEndedMessage({ percentage: 99.5 })).toBe(true);
+      expect(isVideoEndedMessage({ data: { progress: 0.99 } })).toBe(true);
+    });
+
     it("returns false for non-ended events", () => {
       expect(isVideoEndedMessage(null)).toBe(false);
       expect(isVideoEndedMessage(undefined)).toBe(false);
       expect(isVideoEndedMessage("playing")).toBe(false);
       expect(isVideoEndedMessage({ event: "timeupdate" })).toBe(false);
+      expect(
+        isVideoEndedMessage({
+          event: "timeupdate",
+          currentTime: 100,
+          duration: 1500,
+        }),
+      ).toBe(false);
       expect(isVideoEndedMessage({ type: "pause" })).toBe(false);
       expect(isVideoEndedMessage(JSON.stringify({ event: "pause" }))).toBe(false);
     });

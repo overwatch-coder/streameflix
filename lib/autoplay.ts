@@ -17,21 +17,33 @@ export function getNextEpisode(
   episodesCount: number,
   totalSeasons?: number,
 ): NextEpisodeInfo | null {
-  if (currentEpisode < episodesCount) {
-    return {
-      season: currentSeason,
-      episode: currentEpisode + 1,
-    };
+  if (episodesCount > 0) {
+    if (currentEpisode < episodesCount) {
+      return {
+        season: currentSeason,
+        episode: currentEpisode + 1,
+      };
+    }
+
+    if (totalSeasons && currentSeason < totalSeasons) {
+      return {
+        season: currentSeason + 1,
+        episode: 1,
+      };
+    }
+
+    return null;
   }
 
-  if (totalSeasons && currentSeason < totalSeasons) {
-    return {
-      season: currentSeason + 1,
-      episode: 1,
-    };
+  // If episodesCount is unknown or not yet loaded:
+  if (totalSeasons && currentSeason > totalSeasons) {
+    return null;
   }
 
-  return null;
+  return {
+    season: currentSeason,
+    episode: currentEpisode + 1,
+  };
 }
 
 /**
@@ -75,7 +87,9 @@ export function isVideoEndedMessage(data: unknown): boolean {
       trimmed === "ended" ||
       trimmed === "video_ended" ||
       trimmed === "video:ended" ||
-      trimmed === "playback_ended"
+      trimmed === "playback_ended" ||
+      trimmed === "finish" ||
+      trimmed === "completed"
     ) {
       return true;
     }
@@ -98,10 +112,14 @@ export function isVideoEndedMessage(data: unknown): boolean {
     record.event === "ended" ||
     record.event === "finish" ||
     record.event === "completed" ||
+    record.event === "complete" ||
     record.type === "ended" ||
     record.type === "video_ended" ||
     record.type === "playback_ended" ||
-    record.action === "ended"
+    record.action === "ended" ||
+    record.status === "ended" ||
+    record.status === "completed" ||
+    record.state === "ended"
   ) {
     return true;
   }
@@ -111,7 +129,12 @@ export function isVideoEndedMessage(data: unknown): boolean {
     return true;
   }
 
-  if (record.data?.event === "ended" || record.data?.type === "ended") {
+  if (
+    record.data?.event === "ended" ||
+    record.data?.type === "ended" ||
+    record.data?.status === "ended" ||
+    record.data?.status === "completed"
+  ) {
     return true;
   }
 
@@ -121,6 +144,48 @@ export function isVideoEndedMessage(data: unknown): boolean {
     (record.info === 0 || record.data === 0)
   ) {
     return true;
+  }
+
+  // Check if timeupdate / progress indicates video has completed (e.g. within 3s or >= 98%)
+  const currentTime =
+    typeof record.currentTime === "number"
+      ? record.currentTime
+      : typeof record.data?.currentTime === "number"
+        ? record.data.currentTime
+        : typeof record.time === "number"
+          ? record.time
+          : typeof record.data?.time === "number"
+            ? record.data.time
+            : undefined;
+
+  const duration =
+    typeof record.duration === "number"
+      ? record.duration
+      : typeof record.data?.duration === "number"
+        ? record.data.duration
+        : undefined;
+
+  if (currentTime !== undefined && duration !== undefined && duration > 10) {
+    if (duration - currentTime <= 3 || currentTime / duration >= 0.98) {
+      return true;
+    }
+  }
+
+  const progress =
+    typeof record.progress === "number"
+      ? record.progress
+      : typeof record.data?.progress === "number"
+        ? record.data.progress
+        : typeof record.percentage === "number"
+          ? record.percentage
+          : typeof record.data?.percentage === "number"
+            ? record.data.percentage
+            : undefined;
+
+  if (progress !== undefined) {
+    if ((progress >= 0.98 && progress <= 1) || progress >= 98) {
+      return true;
+    }
   }
 
   return false;

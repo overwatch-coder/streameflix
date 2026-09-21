@@ -27,6 +27,7 @@ import { PlayerHeader } from "./player/player-header";
 import { EpisodeSelector } from "./player/episode-selector";
 import { PlayerTabs } from "./player/player-tabs";
 import { UpNextOverlay } from "./player/up-next-overlay";
+import { NextEpisodeCornerButton } from "./player/next-episode-corner-button";
 import { useWatchProgress } from "./player/use-watch-progress";
 
 interface MovieDetails {
@@ -120,17 +121,20 @@ export default function RealStreamingPlayer({
     title?: string;
   } | null>(null);
   const [countdown, setCountdown] = useState<number>(5);
+  const [hasEndedOrNearEnd, setHasEndedOrNearEnd] = useState<boolean>(false);
 
   // Clear countdown / overlay on episode, season, or content change
   useEffect(() => {
     setUpNextData(null);
     setCountdown(5);
+    setHasEndedOrNearEnd(false);
   }, [season, episode, contentId]);
 
   const handlePlayNextEpisode = useCallback(() => {
     if (!nextEpisodeInfo) return;
     setUpNextData(null);
     setCountdown(5);
+    setHasEndedOrNearEnd(false);
     onEpisodeSelect?.(nextEpisodeInfo.season, nextEpisodeInfo.episode);
   }, [nextEpisodeInfo, onEpisodeSelect]);
 
@@ -159,6 +163,8 @@ export default function RealStreamingPlayer({
   const triggerNextEpisodePrompt = useCallback(() => {
     if (!isTVShow || !nextEpisodeInfo) return;
 
+    setHasEndedOrNearEnd(true);
+
     if (autoPlayNextRef.current) {
       const nextEpObj =
         nextEpisodeInfo.season === season
@@ -174,12 +180,40 @@ export default function RealStreamingPlayer({
     }
   }, [isTVShow, nextEpisodeInfo, season, episodes]);
 
+  // Runtime fallback timer: activates prompt if watching reaches end of duration
+  useEffect(() => {
+    if (!open || !isTVShow || !nextEpisodeInfo) return;
+
+    const currentEpisodeDetails = episodes.find(
+      (ep) => ep.episode_number === episode,
+    );
+    const durationMinutes =
+      currentEpisodeDetails?.runtime ||
+      show?.episode_run_time?.[0] ||
+      0;
+
+    // Only apply duration fallback if duration is known and realistic (> 2 minutes)
+    if (!durationMinutes || durationMinutes < 2) return;
+
+    const triggerMs = Math.max(30000, (durationMinutes * 60 - 30) * 1000);
+
+    const timer = setTimeout(() => {
+      setHasEndedOrNearEnd(true);
+      if (autoPlayNextRef.current) {
+        triggerNextEpisodePrompt();
+      }
+    }, triggerMs);
+
+    return () => clearTimeout(timer);
+  }, [open, isTVShow, episode, episodes, show, nextEpisodeInfo, triggerNextEpisodePrompt]);
+
   // postMessage listener for embed events
   useEffect(() => {
     if (!open || !isTVShow) return;
 
     const handleMessage = (event: MessageEvent) => {
       if (isVideoEndedMessage(event.data)) {
+        setHasEndedOrNearEnd(true);
         triggerNextEpisodePrompt();
       }
     };
@@ -387,6 +421,23 @@ export default function RealStreamingPlayer({
               totalCountdown={5}
               onPlayNow={handlePlayNextEpisode}
               onCancel={handleCancelUpNext}
+            />
+          )}
+
+          {isTVShow && nextEpisodeInfo && !upNextData && (
+            <NextEpisodeCornerButton
+              isTVShow={isTVShow}
+              nextSeason={nextEpisodeInfo.season}
+              nextEpisode={nextEpisodeInfo.episode}
+              nextEpisodeTitle={
+                nextEpisodeInfo.season === season
+                  ? episodes.find(
+                      (ep) => ep.episode_number === nextEpisodeInfo.episode,
+                    )?.name
+                  : undefined
+              }
+              onPlayNext={handlePlayNextEpisode}
+              hasEnded={hasEndedOrNearEnd}
             />
           )}
         </PlayerEmbed>
