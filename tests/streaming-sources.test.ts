@@ -51,7 +51,9 @@ describe("streaming-sources", () => {
     expect(autoembedUrl).toBe("https://autoembed.co/movie/tmdb/454639");
 
     const multiembedUrl = getStreamingUrl(movieId, "multiembed");
-    expect(multiembedUrl).toBe("https://multiembed.mov/?video_id=454639&tmdb=1");
+    expect(multiembedUrl).toBe(
+      "https://multiembed.mov/?video_id=454639&tmdb=1",
+    );
   });
 
   it("generates correct TV streaming URLs with season and episode numbers", () => {

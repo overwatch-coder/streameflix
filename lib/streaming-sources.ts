@@ -121,10 +121,19 @@ export const streamingSources: StreamingSource[] = [
   },
 ];
 
+export function appendAutoplayParam(url: string, autoPlay?: boolean): string {
+  if (!autoPlay || !url || url.includes("autoplay=") || url.includes("autoPlay=")) {
+    return url;
+  }
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}autoplay=true`;
+}
+
 export function getStreamingUrl(
   contentId: string,
   sourceId: string,
   imdbId?: string,
+  autoPlay?: boolean,
 ): string {
   const source = streamingSources.find((s) => s.id === sourceId);
   if (!source || !source.embedUrl.movie) return "";
@@ -134,7 +143,8 @@ export function getStreamingUrl(
     idToUse = imdbId;
   }
 
-  return source.embedUrl.movie.replace("{id}", idToUse);
+  const url = source.embedUrl.movie.replace("{id}", idToUse);
+  return appendAutoplayParam(url, autoPlay);
 }
 
 export function getTVStreamingUrl(
@@ -144,6 +154,7 @@ export function getTVStreamingUrl(
   sourceId: string,
   imdbId?: string,
   episodeOption?: "individual" | "full-season",
+  autoPlay?: boolean,
 ): string {
   const source = streamingSources.find((s) => s.id === sourceId);
   if (!source || !source.embedUrl.tv) return "";
@@ -158,7 +169,7 @@ export function getTVStreamingUrl(
   url = url.replace("{season}", season.toString());
   url = url.replace("{episode}", episode.toString());
 
-  return url;
+  return appendAutoplayParam(url, autoPlay);
 }
 
 export function getResolvedStreamingSources(
@@ -168,6 +179,7 @@ export function getResolvedStreamingSources(
   episode?: number,
   imdbId?: string,
   episodeOption?: "individual" | "full-season",
+  autoPlay?: boolean,
 ): ResolvedStreamingSource[] {
   const workingSources = streamingSources
     .filter((source) => source.isWorking)
@@ -178,7 +190,7 @@ export function getResolvedStreamingSources(
     try {
       let url: string;
       if (type === "movie") {
-        url = getStreamingUrl(contentId, source.id, imdbId);
+        url = getStreamingUrl(contentId, source.id, imdbId, autoPlay);
       } else {
         url = getTVStreamingUrl(
           contentId,
@@ -187,6 +199,7 @@ export function getResolvedStreamingSources(
           source.id,
           imdbId,
           episodeOption,
+          autoPlay,
         );
       }
 
@@ -212,6 +225,7 @@ export async function getStreamingUrls(
   episode?: number,
   imdbId?: string,
   episodeOption?: "individual" | "full-season",
+  autoPlay?: boolean,
 ): Promise<string[]> {
   const resolved = getResolvedStreamingSources(
     contentId,
@@ -220,6 +234,7 @@ export async function getStreamingUrls(
     episode,
     imdbId,
     episodeOption,
+    autoPlay,
   );
   return resolved.map((r) => r.url);
 }

@@ -37,6 +37,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+  DrawerClose,
+} from "@/components/ui/drawer";
 
 interface SearchResult {
   id: number;
@@ -197,23 +205,36 @@ export default function Header() {
           </nav>
 
           {/* Search Trigger */}
-          <div className="flex-1 max-w-md mx-4">
+          <div className="flex-1 max-w-md mx-2 sm:mx-4">
             <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
               <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full bg-gray-800/50 border-gray-700 text-gray-400 justify-start hover:bg-gray-800 hover:text-white"
-                  onClick={() => setIsSearchOpen(true)}
-                >
-                  <Search className="mr-2 h-4 w-4" />
-                  <span>Search movies, TV shows...</span>
-                </Button>
+                <div>
+                  {/* Desktop / Tablet Search Bar */}
+                  <Button
+                    variant="outline"
+                    className="hidden sm:flex w-full bg-gray-800/50 border-gray-700 text-gray-400 justify-start hover:bg-gray-800 hover:text-white"
+                    onClick={() => setIsSearchOpen(true)}
+                  >
+                    <Search className="mr-2 h-4 w-4 shrink-0" />
+                    <span className="truncate">Search movies, TV shows...</span>
+                  </Button>
+                  {/* Mobile Search Icon Button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="sm:hidden text-gray-300 hover:text-white hover:bg-gray-800"
+                    onClick={() => setIsSearchOpen(true)}
+                    title="Search"
+                  >
+                    <Search className="h-5 w-5" />
+                  </Button>
+                </div>
               </DialogTrigger>
               <DialogContent className="sm:max-w-2xl bg-black/95 border-gray-800 p-0 overflow-hidden backdrop-blur-xl">
                 <DialogTitle className="sr-only">Search</DialogTitle>
                 <form onSubmit={handleSearch} className="relative">
                   <div className="flex items-center border-b border-gray-800 px-4 h-14">
-                    <Search className="text-gray-400 h-5 w-5 mr-3" />
+                    <Search className="text-gray-400 h-5 w-5 mr-3 shrink-0" />
                     <Input
                       type="text"
                       placeholder="Search movies, TV shows..."
@@ -222,7 +243,7 @@ export default function Header() {
                         setSearchQuery(e.target.value);
                         setShowSuggestions(true);
                       }}
-                      className="bg-transparent border-none text-white placeholder-gray-400 focus-visible:ring-0 text-lg p-0 h-auto w-full"
+                      className="bg-transparent border-none text-white placeholder-gray-400 focus-visible:ring-0 text-base sm:text-lg p-0 h-auto w-full"
                       autoFocus
                     />
                     <Button
@@ -238,7 +259,7 @@ export default function Header() {
 
                 <div className="max-h-[60vh] overflow-y-auto p-2">
                   {searchQuery.length < 2 ? (
-                    <div className="p-4 text-center text-gray-500">
+                    <div className="p-8 text-center text-gray-500">
                       Type at least 2 characters to search...
                     </div>
                   ) : suggestions.length > 0 ? (
@@ -249,52 +270,42 @@ export default function Header() {
                           className="flex items-center gap-4 p-3 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors group"
                           onClick={() => handleSuggestionClick(item)}
                         >
-                          <div className="relative w-12 h-16 flex-shrink-0 rounded overflow-hidden shadow-lg border border-gray-800">
+                          <div className="relative w-12 h-16 rounded overflow-hidden flex-shrink-0 bg-gray-800">
                             <Image
                               src={
                                 item.poster_path
                                   ? `https://image.tmdb.org/t/p/w92${item.poster_path}`
                                   : placeholderImage
                               }
-                              alt={item.title || item.name || "Poster"}
+                              alt={item.title || item.name || ""}
                               fill
-                              className="object-cover group-hover:scale-110 transition-transform duration-300"
+                              className="object-cover"
                             />
                           </div>
-                          <div className="flex flex-col flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <span className="text-white font-semibold truncate group-hover:text-red-500 transition-colors">
-                                {item.title || item.name}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 capitalize font-medium">
+                                {item.media_type}
                               </span>
-                              <div className="flex items-center gap-1 bg-black/50 px-1.5 py-0.5 rounded text-xs">
-                                <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                                <span className="text-white">
-                                  {(item.vote_average || 0).toFixed(1)}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 text-gray-400 text-xs mt-1">
-                              <span className="bg-gray-800 px-1.5 py-0.5 rounded">
-                                {item.media_type === "movie"
-                                  ? "Movie"
-                                  : "TV Show"}
+                              <span className="text-xs text-yellow-500 flex items-center gap-1 font-medium">
+                                <Star className="h-3 w-3 fill-current" />
+                                {item.vote_average.toFixed(1)}
                               </span>
-                              <span>•</span>
-                              <span>
-                                {new Date(
-                                  item.release_date ||
-                                    item.first_air_date ||
-                                    Date.now(),
-                                ).getFullYear()}
+                              <span className="text-xs text-gray-500">
+                                {item.release_date?.split("-")[0] ||
+                                  item.first_air_date?.split("-")[0]}
                               </span>
                             </div>
+                            <h4 className="text-white font-medium truncate group-hover:text-red-500 transition-colors mt-1">
+                              {item.title || item.name}
+                            </h4>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="p-4 text-center text-gray-400">
-                      No results found for "{searchQuery}"
+                    <div className="p-8 text-center text-gray-500">
+                      No results found for &quot;{searchQuery}&quot;
                     </div>
                   )}
                 </div>
@@ -308,7 +319,7 @@ export default function Header() {
             </Dialog>
           </div>
 
-          {/* User Menu */}
+          {/* User Menu & Mobile Drawer Trigger */}
           <div className="flex items-center space-x-2">
             {user ? (
               <DropdownMenu>
@@ -320,7 +331,6 @@ export default function Header() {
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar} alt={user.name} />
                       <AvatarFallback>
-                        {/* <User className="h-4 w-4" /> */}
                         {user.name?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -381,72 +391,124 @@ export default function Header() {
             ) : (
               <Button
                 onClick={() => handleAuthClick("login")}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold"
+                size="sm"
+                className="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs sm:text-sm px-3"
               >
-                <UserCircle className="mr-2 h-4 w-4" />
-                <span>Account</span>
+                <UserCircle className="h-4 w-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Account</span>
               </Button>
             )}
 
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              className="lg:hidden text-white"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </Button>
-          </div>
-        </div>
+            {/* shadcn Mobile Drawer Menu */}
+            <div className="lg:hidden">
+              <Drawer open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                <DrawerTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-gray-800"
+                    aria-label="Open navigation menu"
+                  >
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="bg-gray-950 border-t border-gray-800">
+                  <DrawerHeader className="border-b border-gray-800/80 pb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
+                          <span className="text-white font-bold text-lg">S</span>
+                        </div>
+                        <DrawerTitle className="text-white font-bold text-xl">
+                          StreameFlix
+                        </DrawerTitle>
+                      </div>
+                      <DrawerClose asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-400 hover:text-white"
+                        >
+                          <X className="h-5 w-5" />
+                        </Button>
+                      </DrawerClose>
+                    </div>
+                  </DrawerHeader>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden border-t border-gray-800">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link
-                href="/"
-                className="text-white hover:text-red-500 block px-3 py-2 text-base font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
-                href="/movies"
-                className="text-white hover:text-red-500 block px-3 py-2 text-base font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Movies
-              </Link>
-              <Link
-                href="/tv-shows"
-                className="text-white hover:text-red-500 block px-3 py-2 text-base font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                TV Shows
-              </Link>
-              <Link
-                href="/genres"
-                className="text-white hover:text-red-500 block px-3 py-2 text-base font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Genres
-              </Link>
-              {user && (
-                <Link
-                  href="/social"
-                  className="text-white hover:text-red-500 block px-3 py-2 text-base font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Social
-                </Link>
-              )}
+                  <div className="p-4 space-y-2">
+                    <Link
+                      href="/"
+                      className="flex items-center px-4 py-3 text-base font-medium rounded-lg text-white hover:bg-gray-800/80 hover:text-red-500 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Home
+                    </Link>
+                    <Link
+                      href="/movies"
+                      className="flex items-center px-4 py-3 text-base font-medium rounded-lg text-white hover:bg-gray-800/80 hover:text-red-500 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Movies
+                    </Link>
+                    <Link
+                      href="/tv-shows"
+                      className="flex items-center px-4 py-3 text-base font-medium rounded-lg text-white hover:bg-gray-800/80 hover:text-red-500 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      TV Shows
+                    </Link>
+                    <Link
+                      href="/genres"
+                      className="flex items-center px-4 py-3 text-base font-medium rounded-lg text-white hover:bg-gray-800/80 hover:text-red-500 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Genres
+                    </Link>
+                    {user && (
+                      <Link
+                        href="/social"
+                        className="flex items-center px-4 py-3 text-base font-medium rounded-lg text-white hover:bg-gray-800/80 hover:text-red-500 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Social
+                      </Link>
+                    )}
+
+                    {/* Quick user links for mobile */}
+                    {user && (
+                      <div className="pt-3 mt-3 border-t border-gray-800/80 space-y-1">
+                        <Link
+                          href="/profile"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800/60 rounded-lg"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <User className="h-4 w-4 text-gray-400" />
+                          <span>My Profile</span>
+                        </Link>
+                        <Link
+                          href="/my-list"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800/60 rounded-lg"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Heart className="h-4 w-4 text-red-500" />
+                          <span>My Watchlist & Favorites</span>
+                        </Link>
+                        <Link
+                          href="/settings"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800/60 rounded-lg"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Settings className="h-4 w-4 text-gray-400" />
+                          <span>Settings</span>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </DrawerContent>
+              </Drawer>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </header>
   );

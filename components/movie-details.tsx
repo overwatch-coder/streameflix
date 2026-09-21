@@ -191,7 +191,7 @@ export default function MovieDetails({
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Hero Section */}
-      <div className="relative min-h-screen">
+      <div className="relative min-h-screen flex items-end pt-24 pb-8 sm:pb-12">
         <Image
           src={backdropUrl || "/placeholder.svg"}
           alt={movie.title}
@@ -199,11 +199,11 @@ export default function MovieDetails({
           className="object-cover opacity-40"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
+        <div className="relative z-10 w-full p-4 sm:p-8">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-end">
               {/* Poster */}
               <div className="flex-shrink-0 mx-auto lg:mx-0">
                 <Image

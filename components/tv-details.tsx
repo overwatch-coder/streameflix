@@ -103,11 +103,11 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-4 py-12 pt-24">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="relative z-10 container mx-auto px-4 py-8 sm:py-12 pt-20 sm:pt-24">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Poster */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-24">
+            <div className="lg:col-span-1 flex justify-center lg:block">
+              <div className="sticky top-24 w-48 sm:w-64 lg:w-full max-w-[280px] lg:max-w-none">
                 <div className="aspect-[2/3] relative rounded-lg overflow-hidden shadow-2xl">
                   <Image
                     src={posterUrl || "/placeholder.svg"}
@@ -121,13 +121,13 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
             </div>
 
             {/* Show Info */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-6 text-center lg:text-left">
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
                   {show.name}
                 </h1>
 
-                <div className="flex flex-wrap items-center gap-4 mb-6">
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-6 text-sm sm:text-base">
                   <div className="flex items-center space-x-1">
                     <Star className="h-5 w-5 text-yellow-400 fill-current" />
                     <span className="text-white font-semibold">
@@ -164,7 +164,7 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-2 mb-6">
+                <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-6">
                   {show.genres.map((genre) => (
                     <Badge
                       key={genre.id}
@@ -176,10 +176,10 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                   ))}
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 sm:gap-4 mb-8">
                   <Button
                     size="lg"
-                    className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold"
                     onClick={handleWatchNow}
                   >
                     <Play className="mr-2 h-5 w-5 fill-current" />
@@ -189,7 +189,7 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-gray-600 text-white hover:bg-gray-800 bg-transparent"
+                    className="w-full sm:w-auto border-gray-600 text-white hover:bg-gray-800 bg-transparent"
                     onClick={handleToggleFavorite}
                   >
                     {isFavorite ? (
@@ -208,40 +208,40 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
               </div>
 
               <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="flex overflow-x-auto lg:grid w-full lg:grid-cols-6 bg-gray-800 scrollbar-none rounded-none sm:rounded-md">
+                <TabsList className="flex overflow-x-auto lg:grid w-full lg:grid-cols-6 bg-gray-800 scrollbar-none rounded-lg p-1">
                   <TabsTrigger
                     value="overview"
-                    className="text-white data-[state=active]:bg-red-600"
+                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
                   >
                     Overview
                   </TabsTrigger>
                   <TabsTrigger
                     value="episodes"
-                    className="text-white data-[state=active]:bg-red-600"
+                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
                   >
                     Episodes
                   </TabsTrigger>
                   <TabsTrigger
                     value="cast"
-                    className="text-white data-[state=active]:bg-red-600"
+                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
                   >
                     Cast
                   </TabsTrigger>
                   <TabsTrigger
                     value="trailer"
-                    className="text-white data-[state=active]:bg-red-600"
+                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
                   >
                     Trailer
                   </TabsTrigger>
                   <TabsTrigger
                     value="discussion"
-                    className="text-white data-[state=active]:bg-red-600"
+                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
                   >
                     Discussion
                   </TabsTrigger>
                   <TabsTrigger
                     value="reviews"
-                    className="text-white data-[state=active]:bg-red-600"
+                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
                   >
                     Reviews
                   </TabsTrigger>

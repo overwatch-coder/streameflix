@@ -29,7 +29,7 @@ export default function Footer() {
   return (
     <footer className="bg-black border-t border-gray-800 py-12">
       <div className="container mx-auto px-4 md:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
             <h3 className="text-white font-bold text-xl">StreameFlix</h3>
@@ -216,8 +216,7 @@ export default function Footer() {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © 2025 - {new Date().getFullYear()} StreameFlix. All rights reserved.
-              © 2025 - {currentYear ?? 2026} StreameFlix. All rights reserved.
+              © 2025 - {currentYear ?? new Date().getFullYear()} StreameFlix. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link

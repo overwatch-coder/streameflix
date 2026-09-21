@@ -89,65 +89,65 @@ export default function Hero({ trendingMovies }: { trendingMovies: any }) {
     : "/placeholder.svg?height=1080&width=1920&text=Featured+Movie";
 
   return (
-    <div className="relative h-screen overflow-hidden">
+    <div className="relative min-h-[85vh] sm:h-screen overflow-hidden flex items-end sm:items-center pb-12 sm:pb-0">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
           src={backdropUrl || "/placeholder.svg"}
           alt={featuredMovie.title}
           fill
-          className="object-cover"
+          className="object-cover object-center"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent hidden sm:block" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 h-full flex items-center">
+      <div className="relative z-10 w-full">
         <div className="container mx-auto px-4 md:px-8">
           <div className="max-w-2xl">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight">
               {featuredMovie.title}
             </h1>
 
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 flex-wrap">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-green-500 font-semibold">
+                <span className="text-green-500 font-semibold text-xs sm:text-sm">
                   {Math.round(featuredMovie.vote_average * 10)}% Match
                 </span>
               </div>
-              <span className="text-gray-300">
+              <span className="text-gray-300 text-xs sm:text-sm">
                 {new Date(featuredMovie.release_date).getFullYear()}
               </span>
-              <div className="px-2 py-1 border border-gray-400 text-gray-300 text-sm">
+              <div className="px-1.5 sm:px-2 py-0.5 border border-gray-400 text-gray-300 text-[10px] sm:text-xs rounded">
                 HD
               </div>
             </div>
 
-            <p className="text-lg text-gray-300 mb-8 leading-relaxed line-clamp-3">
+            <p className="text-sm sm:text-base md:text-lg text-gray-300 mb-6 sm:mb-8 leading-relaxed line-clamp-3 sm:line-clamp-4">
               {featuredMovie.overview}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href={`/movie/${featuredMovie.id}/watch`}>
+            <div className="flex flex-row items-center gap-3">
+              <Link href={`/movie/${featuredMovie.id}/watch`} className="flex-1 sm:flex-initial">
                 <Button
-                  size="lg"
-                  className="bg-white text-black hover:bg-gray-200 font-semibold px-8"
+                  size="default"
+                  className="w-full sm:w-auto bg-white text-black hover:bg-gray-200 font-semibold px-6 sm:px-8 h-10 sm:h-11 text-sm sm:text-base"
                 >
-                  <Play className="w-5 h-5 mr-2 fill-current" />
+                  <Play className="w-4 h-4 mr-2 fill-current" />
                   Play
                 </Button>
               </Link>
 
-              <Link href={`/movie/${featuredMovie.id}`}>
+              <Link href={`/movie/${featuredMovie.id}`} className="flex-1 sm:flex-initial">
                 <Button
-                  size="lg"
+                  size="default"
                   variant="outline"
-                  className="border-gray-400 text-white hover:bg-white/10 font-semibold px-8 bg-transparent"
+                  className="w-full sm:w-auto border-gray-400 text-white hover:bg-white/10 font-semibold px-6 sm:px-8 h-10 sm:h-11 text-sm sm:text-base bg-black/40 backdrop-blur-sm"
                 >
-                  <Info className="w-5 h-5 mr-2" />
+                  <Info className="w-4 h-4 mr-2" />
                   More Info
                 </Button>
               </Link>
@@ -156,7 +156,7 @@ export default function Hero({ trendingMovies }: { trendingMovies: any }) {
         </div>
 
         {/* Volume Control */}
-        <div className="absolute bottom-8 right-8">
+        <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 hidden sm:block">
           <Button
             variant="ghost"
             size="sm"

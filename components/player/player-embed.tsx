@@ -11,6 +11,7 @@ interface PlayerEmbedProps {
   onIframeLoad: () => void;
   onIframeError: () => void;
   onRetry: () => void;
+  children?: React.ReactNode;
 }
 
 export function PlayerEmbed({
@@ -21,9 +22,11 @@ export function PlayerEmbed({
   onIframeLoad,
   onIframeError,
   onRetry,
+  children,
 }: PlayerEmbedProps) {
   return (
     <div className="w-full aspect-video bg-black relative rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+      {children}
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600 mb-4"></div>

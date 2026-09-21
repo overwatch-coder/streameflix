@@ -70,7 +70,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
           <CardContent className="p-0 flex-grow">
             {/* Image Area  */}
             <div
-              className="relative w-full aspect-[2/3] overflow-hidden h-full max-h-[250px]"
+              className="relative w-full aspect-[2/3] overflow-hidden"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
@@ -85,34 +85,34 @@ export default function MovieCard({ movie }: MovieCardProps) {
                     setImageError(true);
                     e.currentTarget.src = placeholderImage;
                   }}
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 200px"
+                  sizes="(max-width: 640px) 165px, (max-width: 768px) 190px, 220px"
                 />
               </Link>
 
               {/* Description Overlay on Image Area */}
               <div
-                className={`absolute inset-0 bg-black/80 flex flex-col justify-between p-4
-                            transition-opacity duration-300 pointer-events-none
+                className={`absolute inset-0 bg-black/80 flex flex-col justify-between p-3 sm:p-4
+                            transition-opacity duration-300 pointer-events-none hidden sm:flex
                             ${isHovered ? "opacity-100" : "opacity-0"}`}
               >
                 <div className="flex-grow flex items-center justify-center text-center">
-                  <p className="text-gray-200 text-xs line-clamp-none">
+                  <p className="text-gray-200 text-xs line-clamp-4">
                     {movie.overview || "No description available."}
                   </p>
                 </div>
               </div>
 
-              <div className="absolute top-2 left-2 bg-red-600/80 rounded-full px-3 py-0.5 flex items-center gap-1 z-10">
-                <span className="text-[8px] text-white font-medium">
-                  {"Movie"}
+              <div className="absolute top-2 left-2 bg-red-600/90 rounded-full px-2 sm:px-2.5 py-0.5 flex items-center gap-1 z-10 shadow">
+                <span className="text-[10px] text-white font-medium">
+                  Movie
                 </span>
               </div>
 
               {/* Rating Badge */}
               {rating > 0 && (
-                <div className="absolute top-2 right-2 bg-black/80 rounded-full px-2 py-1 flex items-center gap-1 z-10">
+                <div className="absolute top-2 right-2 bg-black/80 rounded-full px-2 py-0.5 flex items-center gap-1 z-10 shadow">
                   <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                  <span className="text-xs text-white font-medium">
+                  <span className="text-[10px] sm:text-xs text-white font-medium">
                     {rating}
                   </span>
                 </div>
@@ -120,35 +120,34 @@ export default function MovieCard({ movie }: MovieCardProps) {
             </div>
 
             {/* Movie Info Section */}
-            <div className="p-3 pb-0 flex flex-col justify-start">
+            <div className="p-2.5 sm:p-3 pb-0 flex flex-col justify-start">
               <Link href={`/movie/${movie.id}`}>
-                <h3 className="text-white font-medium text-sm line-clamp-2 mb-1 hover:text-red-400 transition-colors">
+                <h3 className="text-white font-medium text-xs sm:text-sm line-clamp-1 hover:text-red-400 transition-colors">
                   {movie.title}
                 </h3>
               </Link>
-              <p className="text-gray-400 text-xs mt-auto">{year}</p>{" "}
+              <p className="text-gray-400 text-[11px] sm:text-xs mt-0.5">{year}</p>
             </div>
           </CardContent>
 
           {/* Card Footer with Buttons */}
-          <CardFooter className="px-3 pb-3 flex flex-col gap-3 items-center w-full shrink-0">
-            {" "}
+          <CardFooter className="p-2.5 sm:p-3 pt-2 flex flex-col gap-1.5 sm:gap-2 items-center w-full shrink-0">
             <Button
               size="sm"
               onClick={handleWatchClick}
-              className="bg-red-600 w-full hover:bg-red-700 text-xs text-white"
+              className="bg-red-600 w-full hover:bg-red-700 text-[11px] sm:text-xs h-7 sm:h-8 text-white px-2"
             >
-              <Play className="w-3 h-3 mr-1 fill-current" />
-              Watch Now
+              <Play className="w-3 h-3 mr-1 fill-current shrink-0" />
+              <span className="truncate">Watch Now</span>
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={handleInfoModalClick}
-              className="w-full border-gray-600 text-white hover:bg-gray-700 text-xs bg-transparent"
+              className="w-full border-gray-700 text-gray-300 hover:text-white hover:bg-gray-800 text-[11px] sm:text-xs h-7 sm:h-8 bg-transparent px-2"
             >
-              <Info className="w-3 h-3 mr-1" />
-              More Info
+              <Info className="w-3 h-3 mr-1 shrink-0" />
+              <span className="truncate">More Info</span>
             </Button>
           </CardFooter>
         </Card>

@@ -131,9 +131,9 @@ export default function SearchResults({ query, genre, year, sortBy, page }: Sear
   return (
     <div className="space-y-6">
       {/* Results Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <p className="text-gray-400">
+          <p className="text-gray-400 text-sm sm:text-base">
             {isLoading ? (
                "Searching..."
             ) : totalResults > 0 ? (
@@ -159,14 +159,14 @@ export default function SearchResults({ query, genre, year, sortBy, page }: Sear
 
       {/* Results Grid */}
       {isLoading ? (
-         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
             {[...Array(12)].map((_, i) => (
                <MovieCardSkeleton key={i} />
             ))}
          </div>
       ) : movies.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
             {movies.map((movie) => (
               <MovieCard key={movie.id} movie={movie} />
             ))}

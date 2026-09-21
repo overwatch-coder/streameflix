@@ -80,9 +80,17 @@ export function EpisodeSelector({
           onClick={() => {
             const i = episodes.findIndex((ep) => ep.episode_number === episode);
             const next = episodes[i + 1];
-            if (next) onEpisodeSelect?.(season, next.episode_number);
+            if (next) {
+              onEpisodeSelect?.(season, next.episode_number);
+            } else if (show?.number_of_seasons && season < show.number_of_seasons) {
+              onEpisodeSelect?.(season + 1, 1);
+            }
           }}
-          disabled={episode === episodes.length || episodes.length === 0}
+          disabled={
+            episodes.length === 0 ||
+            (episode === episodes.length &&
+              (!show?.number_of_seasons || season >= show.number_of_seasons))
+          }
           variant="ghost"
           className="text-white hover:bg-white/10"
         >

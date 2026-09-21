@@ -114,7 +114,7 @@ export default function AdvancedSearchFilters({
       </Button>
 
       {isOpen && (
-        <Card className="absolute top-12 right-0 w-96 bg-gray-900 border-gray-700 z-50 shadow-xl">
+        <Card className="fixed inset-x-4 top-20 sm:absolute sm:inset-auto sm:top-12 sm:right-0 sm:w-96 max-w-[calc(100vw-2rem)] bg-gray-900 border-gray-700 z-50 shadow-2xl max-h-[80vh] overflow-y-auto">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-white text-lg">Advanced Filters</CardTitle>

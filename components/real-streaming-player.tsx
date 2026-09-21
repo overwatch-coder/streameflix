@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Plus, Check, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,12 @@ import {
   getResolvedStreamingSources,
   ResolvedStreamingSource,
 } from "@/lib/streaming-sources";
+import {
+  getNextEpisode,
+  getAutoPlayNextSetting,
+  setAutoPlayNextSetting,
+  isVideoEndedMessage,
+} from "@/lib/autoplay";
 import { getTVSeasonDetails } from "@/lib/tmdb";
 import { Episode, TVDetails } from "@/types/tv";
 import { ShareModal } from "@/components/share-modal";
@@ -20,6 +26,7 @@ import { PlayerEmbed } from "./player/player-embed";
 import { PlayerHeader } from "./player/player-header";
 import { EpisodeSelector } from "./player/episode-selector";
 import { PlayerTabs } from "./player/player-tabs";
+import { UpNextOverlay } from "./player/up-next-overlay";
 import { useWatchProgress } from "./player/use-watch-progress";
 
 interface MovieDetails {
@@ -90,6 +97,99 @@ export default function RealStreamingPlayer({
   const displayTitle =
     isTVShow && show ? show.name : movie ? movie.title : title;
 
+  // Auto-play Next Episode State
+  const [autoPlayNext, setAutoPlayNext] = useState<boolean>(() => {
+    return getAutoPlayNextSetting(true);
+  });
+  const autoPlayNextRef = useRef(autoPlayNext);
+  autoPlayNextRef.current = autoPlayNext;
+
+  const handleAutoPlayNextChange = (val: boolean) => {
+    setAutoPlayNext(val);
+    autoPlayNextRef.current = val;
+    setAutoPlayNextSetting(val);
+  };
+
+  const nextEpisodeInfo = isTVShow
+    ? getNextEpisode(season, episode, episodes.length, show?.number_of_seasons)
+    : null;
+
+  const [upNextData, setUpNextData] = useState<{
+    season: number;
+    episode: number;
+    title?: string;
+  } | null>(null);
+  const [countdown, setCountdown] = useState<number>(5);
+
+  // Clear countdown / overlay on episode, season, or content change
+  useEffect(() => {
+    setUpNextData(null);
+    setCountdown(5);
+  }, [season, episode, contentId]);
+
+  const handlePlayNextEpisode = useCallback(() => {
+    if (!nextEpisodeInfo) return;
+    setUpNextData(null);
+    setCountdown(5);
+    onEpisodeSelect?.(nextEpisodeInfo.season, nextEpisodeInfo.episode);
+  }, [nextEpisodeInfo, onEpisodeSelect]);
+
+  const handleCancelUpNext = useCallback(() => {
+    setUpNextData(null);
+    setCountdown(5);
+  }, []);
+
+  // Up Next Countdown ticker
+  useEffect(() => {
+    if (!upNextData) return;
+
+    if (countdown <= 0) {
+      handlePlayNextEpisode();
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [upNextData, countdown, handlePlayNextEpisode]);
+
+  // Video completion trigger
+  const triggerNextEpisodePrompt = useCallback(() => {
+    if (!isTVShow || !nextEpisodeInfo) return;
+
+    if (autoPlayNextRef.current) {
+      const nextEpObj =
+        nextEpisodeInfo.season === season
+          ? episodes.find((ep) => ep.episode_number === nextEpisodeInfo.episode)
+          : undefined;
+
+      setUpNextData({
+        season: nextEpisodeInfo.season,
+        episode: nextEpisodeInfo.episode,
+        title: nextEpObj?.name,
+      });
+      setCountdown(5);
+    }
+  }, [isTVShow, nextEpisodeInfo, season, episodes]);
+
+  // postMessage listener for embed events
+  useEffect(() => {
+    if (!open || !isTVShow) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (isVideoEndedMessage(event.data)) {
+        triggerNextEpisodePrompt();
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [open, isTVShow, triggerNextEpisodePrompt]);
+
   // Track Watch Progress via custom hook
   useWatchProgress({
     contentId,
@@ -137,6 +237,7 @@ export default function RealStreamingPlayer({
         episode,
         imdbId,
         "individual",
+        autoPlayNextRef.current,
       );
       if (sources.length) {
         setResolvedSources(sources);
@@ -256,6 +357,10 @@ export default function RealStreamingPlayer({
             setError(null);
           }}
           onClose={onClose}
+          autoPlayNext={autoPlayNext}
+          onAutoPlayNextChange={handleAutoPlayNextChange}
+          hasNextEpisode={Boolean(nextEpisodeInfo)}
+          onNextEpisode={handlePlayNextEpisode}
         />
 
         <PlayerEmbed
@@ -272,7 +377,19 @@ export default function RealStreamingPlayer({
             setIsLoading(true);
             loadStreamingSources();
           }}
-        />
+        >
+          {upNextData && (
+            <UpNextOverlay
+              nextSeason={upNextData.season}
+              nextEpisode={upNextData.episode}
+              nextEpisodeTitle={upNextData.title}
+              countdown={countdown}
+              totalCountdown={5}
+              onPlayNow={handlePlayNextEpisode}
+              onCancel={handleCancelUpNext}
+            />
+          )}
+        </PlayerEmbed>
 
         <EpisodeSelector
           isTVShow={isTVShow}

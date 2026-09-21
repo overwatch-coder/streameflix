@@ -118,16 +118,19 @@ export default function SeasonsEpisodes({
               key={episode.id}
               className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors"
             >
-              <CardContent className="p-4">
-                <div className="flex gap-4">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col xs:flex-row gap-3 sm:gap-4">
                   {/* Episode Image */}
-                  <div className="relative w-32 h-20 rounded-lg overflow-hidden bg-gray-700 flex-shrink-0">
+                  <div
+                    className="relative w-full xs:w-28 sm:w-32 h-36 xs:h-20 rounded-lg overflow-hidden bg-gray-700 flex-shrink-0 cursor-pointer group"
+                    onClick={() => handleEpisodePlay(episode.episode_number)}
+                  >
                     {episode.still_path ? (
                       <Image
                         src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
                         alt={episode.name}
                         fill
-                        className="object-cover"
+                        className="object-cover group-hover:scale-105 transition-transform"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -136,30 +139,24 @@ export default function SeasonsEpisodes({
                     )}
 
                     {/* Play Button Overlay */}
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <Button
-                        size="sm"
-                        className="bg-red-600 hover:bg-red-700"
-                        onClick={() =>
-                          handleEpisodePlay(episode.episode_number)
-                        }
-                      >
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-70 xs:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="bg-red-600 rounded-full p-2 text-white shadow">
                         <Play className="h-4 w-4 fill-current" />
-                      </Button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Episode Info */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="text-white font-semibold">
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h4 className="text-white font-semibold text-sm sm:text-base line-clamp-1">
                           {episode.episode_number}. {episode.name}
                         </h4>
-                        <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 mt-1">
                           {episode.air_date && (
                             <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
+                              <Calendar className="h-3 w-3 shrink-0" />
                               <span>
                                 {new Date(
                                   episode.air_date,
@@ -169,7 +166,7 @@ export default function SeasonsEpisodes({
                           )}
                           {episode.runtime && (
                             <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
+                              <Clock className="h-3 w-3 shrink-0" />
                               <span>{episode.runtime}min</span>
                             </div>
                           )}
@@ -185,18 +182,18 @@ export default function SeasonsEpisodes({
 
                       <Button
                         size="sm"
-                        className="bg-red-600 hover:bg-red-700 ml-4"
+                        className="bg-red-600 hover:bg-red-700 shrink-0 text-xs px-3 h-8"
                         onClick={() =>
                           handleEpisodePlay(episode.episode_number)
                         }
                       >
-                        <Play className="h-4 w-4 fill-current mr-1" />
+                        <Play className="h-3.5 w-3.5 fill-current mr-1" />
                         Watch
                       </Button>
                     </div>
 
                     {episode.overview && (
-                      <p className="text-gray-300 text-sm line-clamp-2">
+                      <p className="text-gray-300 text-xs sm:text-sm line-clamp-2">
                         {episode.overview}
                       </p>
                     )}

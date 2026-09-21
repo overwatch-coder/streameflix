@@ -56,11 +56,11 @@ export default function TVSection({ title, shows, loading }: TVSectionProps) {
         <div className="px-4 md:px-8 mb-4">
           <h2 className="text-2xl font-bold text-white">{title}</h2>
         </div>
-        <div className="flex gap-4 overflow-hidden px-4 md:px-8 pb-4">
+        <div className="flex gap-3 sm:gap-4 overflow-hidden px-4 md:px-8 pb-4">
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="flex-none basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/5 pr-4"
+              className="flex-none w-[150px] xs:w-[165px] sm:w-[190px] md:w-[210px]"
             >
               <MovieCardSkeleton />
             </div>
@@ -106,21 +106,21 @@ export default function TVSection({ title, shows, loading }: TVSectionProps) {
         )}
 
         {/* TV Shows Container */}
-        <Card
+        <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className="flex gap-4 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-4 flex-row"
+          className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-4 relative"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {shows.map((show) => (
             <div
               key={show.id}
-              className="flex-none relative basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/5 pr-4"
+              className="flex-none w-[150px] xs:w-[165px] sm:w-[190px] md:w-[210px] select-none"
             >
               <TVCard show={show} />
             </div>
           ))}
-        </Card>
+        </div>
       </div>
     </section>
   );
