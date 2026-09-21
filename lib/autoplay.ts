@@ -36,7 +36,7 @@ export function getNextEpisode(
   }
 
   // If episodesCount is unknown or not yet loaded:
-  if (totalSeasons !== undefined && currentSeason > totalSeasons) {
+  if (totalSeasons !== undefined && currentSeason >= totalSeasons) {
     return null;
   }
 
@@ -105,7 +105,7 @@ export function isVideoEndedMessage(data: unknown): boolean {
     return false;
   }
 
-  const record = parsed as Record<string, any>;
+  const record = parsed as Record<string, unknown>;
 
   // Check top-level event/type strings
   if (
@@ -124,16 +124,21 @@ export function isVideoEndedMessage(data: unknown): boolean {
     return true;
   }
 
+  const dataRecord =
+    typeof record.data === "object" && record.data !== null
+      ? (record.data as Record<string, unknown>)
+      : undefined;
+
   // Check nested data payload (e.g. VidLink PLAYER_EVENT)
-  if (record.type === "PLAYER_EVENT" && record.data?.event === "ended") {
+  if (record.type === "PLAYER_EVENT" && dataRecord?.event === "ended") {
     return true;
   }
 
   if (
-    record.data?.event === "ended" ||
-    record.data?.type === "ended" ||
-    record.data?.status === "ended" ||
-    record.data?.status === "completed"
+    dataRecord?.event === "ended" ||
+    dataRecord?.type === "ended" ||
+    dataRecord?.status === "ended" ||
+    dataRecord?.status === "completed"
   ) {
     return true;
   }
@@ -150,19 +155,19 @@ export function isVideoEndedMessage(data: unknown): boolean {
   const currentTime =
     typeof record.currentTime === "number"
       ? record.currentTime
-      : typeof record.data?.currentTime === "number"
-        ? record.data.currentTime
+      : typeof dataRecord?.currentTime === "number"
+        ? dataRecord.currentTime
         : typeof record.time === "number"
           ? record.time
-          : typeof record.data?.time === "number"
-            ? record.data.time
+          : typeof dataRecord?.time === "number"
+            ? dataRecord.time
             : undefined;
 
   const duration =
     typeof record.duration === "number"
       ? record.duration
-      : typeof record.data?.duration === "number"
-        ? record.data.duration
+      : typeof dataRecord?.duration === "number"
+        ? dataRecord.duration
         : undefined;
 
   if (currentTime !== undefined && duration !== undefined && duration > 10) {
@@ -174,12 +179,12 @@ export function isVideoEndedMessage(data: unknown): boolean {
   const progress =
     typeof record.progress === "number"
       ? record.progress
-      : typeof record.data?.progress === "number"
-        ? record.data.progress
+      : typeof dataRecord?.progress === "number"
+        ? dataRecord.progress
         : typeof record.percentage === "number"
           ? record.percentage
-          : typeof record.data?.percentage === "number"
-            ? record.data.percentage
+          : typeof dataRecord?.percentage === "number"
+            ? dataRecord.percentage
             : undefined;
 
   if (progress !== undefined) {

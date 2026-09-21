@@ -191,9 +191,7 @@ export default function RealStreamingPlayer({
       (ep) => ep.episode_number === episode,
     );
     const durationMinutes =
-      currentEpisodeDetails?.runtime ||
-      show?.episode_run_time?.[0] ||
-      0;
+      currentEpisodeDetails?.runtime || show?.episode_run_time?.[0] || 0;
 
     // Only apply duration fallback if duration is known and realistic (> 2 minutes)
     if (!durationMinutes || durationMinutes < 2) return;
@@ -208,7 +206,15 @@ export default function RealStreamingPlayer({
     }, triggerMs);
 
     return () => clearTimeout(timer);
-  }, [open, isTVShow, episode, episodes, show, nextEpisodeInfo, triggerNextEpisodePrompt]);
+  }, [
+    open,
+    isTVShow,
+    episode,
+    episodes,
+    show,
+    nextEpisodeInfo,
+    triggerNextEpisodePrompt,
+  ]);
 
   // postMessage listener for embed events
   useEffect(() => {
