@@ -100,6 +100,8 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
         >
           <div className="absolute inset-0 bg-linear-to-r from-black via-black/80 to-black/40" />
           <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-r from-black via-black/80 to-black/40" />
+          <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
         </div>
 
         {/* Content */}
@@ -109,312 +111,322 @@ export default function TVDetails({ show, credits, videos }: TVDetailsProps) {
             <div className="lg:col-span-1 flex justify-center lg:block">
               <div className="sticky top-24 w-48 sm:w-64 lg:w-full max-w-[280px] lg:max-w-none">
                 <div className="aspect-2/3 relative rounded-lg overflow-hidden shadow-2xl">
-                  <Image
-                    src={posterUrl || "/placeholder.svg"}
-                    alt={show.name}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
+                  <div className="aspect-2/3 relative rounded-lg overflow-hidden shadow-2xl">
+                    <Image
+                      src={posterUrl || "/placeholder.svg"}
+                      alt={show.name}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Show Info */}
-            <div className="lg:col-span-2 space-y-6 text-center lg:text-left">
-              <div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
-                  {show.name}
-                </h1>
+              {/* Show Info */}
+              <div className="lg:col-span-2 space-y-6 text-center lg:text-left">
+                <div>
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
+                    {show.name}
+                  </h1>
 
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-6 text-sm sm:text-base">
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                    <span className="text-white font-semibold">
-                      {(show.vote_average || 0).toFixed(1)}
-                    </span>
-                    <span className="text-gray-400">
-                      ({show.vote_count.toLocaleString()} votes)
-                    </span>
-                  </div>
+                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-6 text-sm sm:text-base">
+                    <div className="flex items-center space-x-1">
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                      <span className="text-white font-semibold">
+                        {(show.vote_average || 0).toFixed(1)}
+                      </span>
+                      <span className="text-gray-400">
+                        ({show.vote_count.toLocaleString()} votes)
+                      </span>
+                    </div>
 
-                  <div className="flex items-center space-x-1 text-gray-300">
-                    <Calendar className="h-4 w-4" />
-                    <span>{new Date(show.first_air_date).getFullYear()}</span>
-                  </div>
-
-                  <div className="flex items-center space-x-1 text-gray-300">
-                    <Tv className="h-4 w-4" />
-                    <span>
-                      {show.number_of_seasons} Season
-                      {show.number_of_seasons !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center space-x-1 text-gray-300">
-                    <Users className="h-4 w-4" />
-                    <span>{show.number_of_episodes} Episodes</span>
-                  </div>
-
-                  {show.episode_run_time?.[0] && (
                     <div className="flex items-center space-x-1 text-gray-300">
-                      <Clock className="h-4 w-4" />
-                      <span>{show.episode_run_time[0]}min</span>
+                      <Calendar className="h-4 w-4" />
+                      <span>{new Date(show.first_air_date).getFullYear()}</span>
                     </div>
-                  )}
-                </div>
 
-                <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-6">
-                  {show.genres.map((genre) => (
-                    <Badge
-                      key={genre.id}
-                      variant="secondary"
-                      className="bg-gray-800 text-white"
-                    >
-                      {genre.name}
-                    </Badge>
-                  ))}
-                </div>
+                    <div className="flex items-center space-x-1 text-gray-300">
+                      <Tv className="h-4 w-4" />
+                      <span>
+                        {show.number_of_seasons} Season
+                        {show.number_of_seasons !== 1 ? "s" : ""}
+                      </span>
+                    </div>
 
-                <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 sm:gap-4 mb-8">
-                  <Button
-                    size="lg"
-                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold"
-                    onClick={handleWatchNow}
-                  >
-                    <Play className="mr-2 h-5 w-5 fill-current" />
-                    Watch Now
-                  </Button>
+                    <div className="flex items-center space-x-1 text-gray-300">
+                      <Users className="h-4 w-4" />
+                      <span>{show.number_of_episodes} Episodes</span>
+                    </div>
 
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto border-gray-600 text-white hover:bg-gray-800 bg-transparent"
-                    onClick={handleToggleFavorite}
-                  >
-                    {isFavorite ? (
-                      <>
-                        <Check className="mr-2 h-5 w-5" />
-                        In My List
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="mr-2 h-5 w-5" />
-                        Add to List
-                      </>
+                    {show.episode_run_time?.[0] && (
+                      <div className="flex items-center space-x-1 text-gray-300">
+                        <Clock className="h-4 w-4" />
+                        <span>{show.episode_run_time[0]}min</span>
+                      </div>
                     )}
-                  </Button>
-                </div>
-              </div>
-
-              <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="flex overflow-x-auto lg:grid w-full lg:grid-cols-6 bg-gray-800 scrollbar-none rounded-lg p-1">
-                  <TabsTrigger
-                    value="overview"
-                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
-                  >
-                    Overview
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="episodes"
-                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
-                  >
-                    Episodes
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="cast"
-                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
-                  >
-                    Cast
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="trailer"
-                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
-                  >
-                    Trailer
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="discussion"
-                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
-                  >
-                    Discussion
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="reviews"
-                    className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
-                  >
-                    Reviews
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="overview" className="space-y-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-4">
-                      Overview
-                    </h2>
-                    <p className="text-gray-300 text-lg leading-relaxed">
-                      {show.overview}
-                    </p>
                   </div>
 
-                  {creator && (
-                    <div>
-                      <h3 className="text-xl font-bold text-white mb-2">
-                        Creator
-                      </h3>
-                      <p className="text-gray-300">{creator.name}</p>
-                    </div>
-                  )}
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-6">
+                    {show.genres.map((genre) => (
+                      <Badge
+                        key={genre.id}
+                        variant="secondary"
+                        className="bg-gray-800 text-white"
+                      >
+                        {genre.name}
+                      </Badge>
+                    ))}
+                  </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 sm:gap-4 mb-8">
+                    <Button
+                      size="lg"
+                      className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold"
+                      onClick={handleWatchNow}
+                    >
+                      <Play className="mr-2 h-5 w-5 fill-current" />
+                      Watch Now
+                    </Button>
+
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full sm:w-auto border-gray-600 text-white hover:bg-gray-800 bg-transparent"
+                      onClick={handleToggleFavorite}
+                    >
+                      {isFavorite ? (
+                        <>
+                          <Check className="mr-2 h-5 w-5" />
+                          In My List
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="mr-2 h-5 w-5" />
+                          Add to List
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="flex overflow-x-auto lg:grid w-full lg:grid-cols-6 bg-gray-800 scrollbar-none rounded-lg p-1">
+                    <TabsTrigger
+                      value="overview"
+                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                    >
+                      Overview
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="episodes"
+                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                    >
+                      Episodes
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="cast"
+                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                    >
+                      Cast
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="trailer"
+                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                    >
+                      Trailer
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="discussion"
+                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                    >
+                      Discussion
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="reviews"
+                      className="shrink-0 min-w-[75px] text-white data-[state=active]:bg-red-600 text-xs sm:text-sm"
+                    >
+                      Reviews
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="overview" className="space-y-6">
                     <div>
-                      <h4 className="text-white font-semibold mb-1">
-                        First Air Date
-                      </h4>
-                      <p className="text-gray-300">
-                        {new Date(show.first_air_date).toLocaleDateString()}
+                      <h2 className="text-2xl font-bold text-white mb-4">
+                        Overview
+                      </h2>
+                      <p className="text-gray-300 text-lg leading-relaxed">
+                        {show.overview}
                       </p>
                     </div>
-                    <div>
-                      <h4 className="text-white font-semibold mb-1">Status</h4>
-                      <Badge
-                        variant={
-                          show.status === "Ended" ? "destructive" : "default"
-                        }
-                        className="bg-green-600"
-                      >
-                        {show.status}
-                      </Badge>
-                    </div>
-                    <div>
-                      <h4 className="text-white font-semibold mb-1">Seasons</h4>
-                      <p className="text-gray-300">{show.number_of_seasons}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-white font-semibold mb-1">
-                        Episodes
-                      </h4>
-                      <p className="text-gray-300">{show.number_of_episodes}</p>
-                    </div>
-                  </div>
-                </TabsContent>
 
-                <TabsContent value="episodes">
-                  <SeasonsEpisodes
-                    showId={show.id}
-                    seasons={show.seasons}
-                    onEpisodeSelect={(season, episode) => {
-                      setSelectedSeason(season);
-                      setSelectedEpisode(episode);
-                      setShowPlayer(true);
-                      router.push(
-                        `/tv/${show.id}/watch?season=${season}&episode=${episode}`,
-                      );
-                    }}
-                    setSelectedSeasonMain={setSelectedSeason}
-                  />
-                </TabsContent>
+                    {creator && (
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-2">
+                          Creator
+                        </h3>
+                        <p className="text-gray-300">{creator.name}</p>
+                      </div>
+                    )}
 
-                <TabsContent value="cast">
-                  {mainCast.length > 0 && (
-                    <div>
-                      <h3 className="text-xl font-bold text-white mb-4">
-                        Main Cast
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {mainCast.map((actor) => (
-                          <Link key={actor.id} href={`/person/${actor.id}`}>
-                            <Card className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors cursor-pointer">
-                              <CardContent className="p-4">
-                                <div className="flex items-center space-x-3">
-                                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700">
-                                    {actor.profile_path && (
-                                      <Image
-                                        src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
-                                        alt={actor.name}
-                                        width={48}
-                                        height={48}
-                                        className="object-cover"
-                                      />
-                                    )}
-                                  </div>
-                                  <div>
-                                    <p className="text-white font-medium">
-                                      {actor.name}
-                                    </p>
-                                    <p className="text-gray-400 text-sm">
-                                      {actor.character}
-                                    </p>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </Link>
-                        ))}
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <h4 className="text-white font-semibold mb-1">
+                          First Air Date
+                        </h4>
+                        <p className="text-gray-300">
+                          {new Date(show.first_air_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-white font-semibold mb-1">
+                          Status
+                        </h4>
+                        <Badge
+                          variant={
+                            show.status === "Ended" ? "destructive" : "default"
+                          }
+                          className="bg-green-600"
+                        >
+                          {show.status}
+                        </Badge>
+                      </div>
+                      <div>
+                        <h4 className="text-white font-semibold mb-1">
+                          Seasons
+                        </h4>
+                        <p className="text-gray-300">
+                          {show.number_of_seasons}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-white font-semibold mb-1">
+                          Episodes
+                        </h4>
+                        <p className="text-gray-300">
+                          {show.number_of_episodes}
+                        </p>
                       </div>
                     </div>
-                  )}
-                </TabsContent>
+                  </TabsContent>
 
-                <TabsContent value="trailer">
-                  {trailer ? (
-                    <div>
-                      <h3 className="text-xl font-bold text-white mb-4">
-                        Trailer
-                      </h3>
-                      <VideoPlayer
-                        videoId={trailer.key}
-                        title={`${show.name} Trailer`}
-                      />
-                    </div>
-                  ) : (
-                    <p className="text-gray-400">No trailer available</p>
-                  )}
-                </TabsContent>
+                  <TabsContent value="episodes">
+                    <SeasonsEpisodes
+                      showId={show.id}
+                      seasons={show.seasons}
+                      onEpisodeSelect={(season, episode) => {
+                        setSelectedSeason(season);
+                        setSelectedEpisode(episode);
+                        setShowPlayer(true);
+                        router.push(
+                          `/tv/${show.id}/watch?season=${season}&episode=${episode}`,
+                        );
+                      }}
+                      setSelectedSeasonMain={setSelectedSeason}
+                    />
+                  </TabsContent>
 
-                <TabsContent value="discussion">
-                  <SocialFeed
-                    mediaId={show.id.toString()}
-                    mediaType="tv"
-                    mediaTitle={show.name}
-                    mediaPoster={show?.poster_path || ""}
-                  />
-                </TabsContent>
+                  <TabsContent value="cast">
+                    {mainCast.length > 0 && (
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-4">
+                          Main Cast
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {mainCast.map((actor) => (
+                            <Link key={actor.id} href={`/person/${actor.id}`}>
+                              <Card className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors cursor-pointer">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center space-x-3">
+                                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700">
+                                      {actor.profile_path && (
+                                        <Image
+                                          src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
+                                          alt={actor.name}
+                                          width={48}
+                                          height={48}
+                                          className="object-cover"
+                                        />
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="text-white font-medium">
+                                        {actor.name}
+                                      </p>
+                                      <p className="text-gray-400 text-sm">
+                                        {actor.character}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
 
-                <TabsContent value="reviews">
-                  <UserReviews
-                    mediaId={show.id.toString()}
-                    mediaType="tv"
-                    mediaTitle={show.name}
-                  />
-                </TabsContent>
-              </Tabs>
+                  <TabsContent value="trailer">
+                    {trailer ? (
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-4">
+                          Trailer
+                        </h3>
+                        <VideoPlayer
+                          videoId={trailer.key}
+                          title={`${show.name} Trailer`}
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-gray-400">No trailer available</p>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="discussion">
+                    <SocialFeed
+                      mediaId={show.id.toString()}
+                      mediaType="tv"
+                      mediaTitle={show.name}
+                      mediaPoster={show?.poster_path || ""}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="reviews">
+                    <UserReviews
+                      mediaId={show.id.toString()}
+                      mediaType="tv"
+                      mediaTitle={show.name}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Streaming Player */}
-      {showPlayer && (
-        <RealStreamingPlayer
-          showId={show.id.toString()}
-          season={selectedSeason}
-          episode={selectedEpisode}
-          title={`${show.name} - S${selectedSeason}E${selectedEpisode}`}
-          imdbId={show.id.toString()}
-          open={showPlayer}
-          onClose={() => {
-            setShowPlayer(false);
-            router.push(`/tv/${show.id}`);
-          }}
-          onEpisodeSelect={(selectedSeason, selectedEpisode) =>
-            router.push(
-              `/tv/${show.id}/watch?season=${selectedSeason}&episode=${selectedEpisode}`,
-            )
-          }
-          show={show}
-        />
-      )}
+        {/* Streaming Player */}
+        {showPlayer && (
+          <RealStreamingPlayer
+            showId={show.id.toString()}
+            season={selectedSeason}
+            episode={selectedEpisode}
+            title={`${show.name} - S${selectedSeason}E${selectedEpisode}`}
+            imdbId={show.id.toString()}
+            open={showPlayer}
+            onClose={() => {
+              setShowPlayer(false);
+              router.push(`/tv/${show.id}`);
+            }}
+            onEpisodeSelect={(selectedSeason, selectedEpisode) =>
+              router.push(
+                `/tv/${show.id}/watch?season=${selectedSeason}&episode=${selectedEpisode}`,
+              )
+            }
+            show={show}
+          />
+        )}
+      </div>
     </>
   );
 }
