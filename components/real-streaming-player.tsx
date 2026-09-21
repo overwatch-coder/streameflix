@@ -103,7 +103,10 @@ export default function RealStreamingPlayer({
     return getAutoPlayNextSetting(true);
   });
   const autoPlayNextRef = useRef(autoPlayNext);
-  autoPlayNextRef.current = autoPlayNext;
+
+  useEffect(() => {
+    autoPlayNextRef.current = autoPlayNext;
+  }, [autoPlayNext]);
 
   const handleAutoPlayNextChange = (val: boolean) => {
     setAutoPlayNext(val);

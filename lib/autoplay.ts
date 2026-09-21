@@ -25,7 +25,7 @@ export function getNextEpisode(
       };
     }
 
-    if (totalSeasons && currentSeason < totalSeasons) {
+    if (totalSeasons !== undefined && currentSeason < totalSeasons) {
       return {
         season: currentSeason + 1,
         episode: 1,
@@ -36,7 +36,7 @@ export function getNextEpisode(
   }
 
   // If episodesCount is unknown or not yet loaded:
-  if (totalSeasons && currentSeason > totalSeasons) {
+  if (totalSeasons !== undefined && currentSeason > totalSeasons) {
     return null;
   }
 
