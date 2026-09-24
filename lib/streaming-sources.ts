@@ -119,6 +119,20 @@ export const streamingSources: StreamingSource[] = [
     supportsSubtitles: true,
     idType: "tmdb",
   },
+  {
+    id: "vidsrc.sbs",
+    name: "VidSrc.sbs",
+    baseUrl: "https://vidsrc.sbs",
+    embedUrl: {
+      movie: "https://vidsrc.sbs/embed/movie/{id}",
+      tv: "https://vidsrc.sbs/embed/tv/{id}/{season}/{episode}",
+    },
+    isWorking: true,
+    priority: 8,
+    supportsQuality: false,
+    supportsSubtitles: false,
+    idType: "tmdb",
+  },
 ];
 
 export function appendAutoplayParam(url: string, autoPlay?: boolean): string {
