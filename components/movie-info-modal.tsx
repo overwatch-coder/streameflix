@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, Play, Heart, Calendar, Clock } from "lucide-react"
@@ -109,6 +109,9 @@ export default function MovieInfoModal({ movie, open, onClose }: MovieInfoModalP
       <DialogContent className="max-w-2xl sm:max-w-4xl w-full max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">{movie.title}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Movie details for {movie.title}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid w-full grid-cols-1 lg:grid-cols-3 gap-6">

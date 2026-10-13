@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Heart, MessageCircle, Share2, Users, TrendingUp, Film, User, Plus, Check } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import Image from "next/image"
@@ -292,6 +292,9 @@ export default function SocialFeatures() {
                       <DialogContent className="bg-gray-900 border-gray-800">
                         <DialogHeader>
                           <DialogTitle className="text-white">Select a Movie</DialogTitle>
+                          <DialogDescription className="sr-only">
+                            Select a movie to attach to your post
+                          </DialogDescription>
                         </DialogHeader>
                         <div className="grid grid-cols-2 gap-4">
                           {trendingMovies.map((movie) => (

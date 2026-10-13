@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -148,6 +149,9 @@ export default function TVInfoModal({ show, open, onClose }: TVInfoModalProps) {
       <DialogContent className="max-w-2xl sm:max-w-6xl w-full max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">{show.name}</DialogTitle>
+          <DialogDescription className="sr-only">
+            TV show details for {show.name}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

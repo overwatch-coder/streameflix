@@ -34,6 +34,7 @@ import { placeholderImage } from "./movie-card";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -50,11 +51,12 @@ interface SearchResult {
   id: number;
   title?: string;
   name?: string;
-  media_type: "movie" | "tv";
-  poster_path: string;
+  media_type: "movie" | "tv" | "person";
+  poster_path?: string;
+  profile_path?: string;
   release_date?: string;
   first_air_date?: string;
-  vote_average: number;
+  vote_average?: number;
 }
 
 export default function Header() {
@@ -147,8 +149,12 @@ export default function Header() {
   };
 
   const handleSuggestionClick = (item: SearchResult) => {
-    const type = item.media_type === "movie" ? "movie" : "tv";
-    router.push(`/${type}/${item.id}`);
+    if (item.media_type === "person") {
+      router.push(`/person/${item.id}`);
+    } else {
+      const type = item.media_type === "movie" ? "movie" : "tv";
+      router.push(`/${type}/${item.id}`);
+    }
     setIsSearchOpen(false);
     setShowSuggestions(false);
     setSearchQuery("");
@@ -232,6 +238,9 @@ export default function Header() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-2xl bg-black/95 border-gray-800 p-0 overflow-hidden backdrop-blur-xl">
                 <DialogTitle className="sr-only">Search</DialogTitle>
+                <DialogDescription className="sr-only">
+                  Search movies, TV shows, and people
+                </DialogDescription>
                 <form onSubmit={handleSearch} className="relative">
                   <div className="flex items-center border-b border-gray-800 px-4 h-14">
                     <Search className="text-gray-400 h-5 w-5 mr-3 shrink-0" />
@@ -273,8 +282,8 @@ export default function Header() {
                           <div className="relative w-12 h-16 rounded overflow-hidden flex-shrink-0 bg-gray-800">
                             <Image
                               src={
-                                item.poster_path
-                                  ? `https://image.tmdb.org/t/p/w92${item.poster_path}`
+                                item.poster_path || item.profile_path
+                                  ? `https://image.tmdb.org/t/p/w92${item.poster_path || item.profile_path}`
                                   : placeholderImage
                               }
                               alt={item.title || item.name || ""}
@@ -287,17 +296,20 @@ export default function Header() {
                               <span className="text-xs px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 capitalize font-medium">
                                 {item.media_type}
                               </span>
-                              <span className="text-xs text-yellow-500 flex items-center gap-1 font-medium">
-                                <Star className="h-3 w-3 fill-current" />
-                                {item.vote_average.toFixed(1)}
-                              </span>
+                              {item.vote_average != null &&
+                                !isNaN(Number(item.vote_average)) && (
+                                  <span className="text-xs text-yellow-500 flex items-center gap-1 font-medium">
+                                    <Star className="h-3 w-3 fill-current" />
+                                    {Number(item.vote_average).toFixed(1)}
+                                  </span>
+                                )}
                               <span className="text-xs text-gray-500">
                                 {item.release_date?.split("-")[0] ||
                                   item.first_air_date?.split("-")[0]}
                               </span>
                             </div>
                             <h4 className="text-white font-medium truncate group-hover:text-red-500 transition-colors mt-1">
-                              {item.title || item.name}
+                              {item.title || item.name || "Untitled"}
                             </h4>
                           </div>
                         </div>

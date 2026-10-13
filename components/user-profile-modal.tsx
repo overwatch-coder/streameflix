@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -74,7 +75,7 @@ export default function UserProfileModal({
                 <DialogTitle className="text-2xl font-bold">
                   {profile.full_name || "Anonymous User"}
                 </DialogTitle>
-                <div className="text-gray-400 text-sm">@{profile.username}</div>
+                <DialogDescription className="text-gray-400 text-sm">@{profile.username}</DialogDescription>
               </DialogHeader>
 
               <div className="space-y-6">
